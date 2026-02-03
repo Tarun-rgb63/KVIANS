@@ -1,0 +1,197 @@
+{  
+box-sizing: border-box;  
+}  
+
+body {
+margin: 0;
+height: 100vh;
+background: radial-gradient(circle at top, #1e293b, #020617);
+overflow: hidden;
+}
+
+/* BOOK */
+.book {
+position: absolute;
+top: 50%;
+left: 50%;
+width: min(95vw, 760px);
+aspect-ratio: 32 / 9;
+transform: translate(-50%, -50%);
+transform-style: preserve-3d;
+perspective: 3000px;
+}
+
+/* PAGE */
+.page {
+position: absolute;
+width: 50%;
+height: 100%;
+right: 0;
+
+transform-origin: left center;
+transform-style: preserve-3d;
+backface-visibility: hidden;
+
+transition: transform 1.15s cubic-bezier(.22,.61,.36,1);
+will-change: transform;
+}
+
+/* FRONT & BACK */
+.page .front,
+.page .back {
+position: absolute;
+inset: 0;
+background: #0b1220;
+backface-visibility: hidden;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.page .back {
+transform: rotateY(180deg);
+}
+
+.blank {
+background: #020617;
+}
+
+.page img {
+width: 100%;
+height: 100%;
+object-fit: contain;   /* ✅ NO CROPPING */
+background: #000;      /* letterbox */
+transform: translateZ(0);
+}
+
+/* SHADOW */
+.page::after {
+content: "";
+position: absolute;
+inset: 0;
+opacity: 0;
+background: linear-gradient(to left, rgba(0,0,0,.55), transparent 70%);
+transition: opacity .4s ease;
+pointer-events: none;
+}
+
+/* TURN */
+.page.turn {
+transform: rotateY(-178deg);
+}
+
+.page.turn::after {
+opacity: 1;
+}
+
+/* CONTROLS */
+/* CONTROLS (COMPACT) */
+.controls {
+position: fixed;
+bottom: 14px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+gap: 8px;
+padding: 6px 12px;
+background: rgba(15, 23, 42, 0.75);
+backdrop-filter: blur(10px);
+border-radius: 999px;
+box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+z-index: 999;
+}
+
+.controls button {
+width: 36px;
+height: 36px;
+border-radius: 50%;
+border: none;
+font-size: 16px;
+color: #fff;
+cursor: pointer;
+background: linear-gradient(
+145deg,
+rgba(255,255,255,0.16),
+rgba(255,255,255,0.05)
+);
+box-shadow:
+inset 0 0 0 1px rgba(255,255,255,0.12),
+0 3px 8px rgba(0,0,0,0.35);
+transition: transform 0.15s ease;
+}
+
+.controls button:hover { transform: scale(1.06); }
+.controls button:active { transform: scale(0.94); }
+
+/* PAGE INDICATOR */
+.page-indicator {
+position: fixed;
+top: 16px;
+left: 50%;
+transform: translateX(-50%);
+padding: 6px 14px;
+font-size: 14px;
+color: #fff;
+background: rgba(0,0,0,0.45);
+border-radius: 20px;
+z-index: 1000;
+}
+
+/* FALLING BACKGROUND */
+.fall-layer {
+position: fixed;
+inset: 0;
+pointer-events: none;
+z-index: 0;
+}
+
+.fall-item {
+position: absolute;
+top: -40px;
+opacity: 0.8;
+animation: fallDrift linear infinite;
+}
+
+@keyframes fallDrift {
+from { transform: translateY(0); }
+to   { transform: translateY(110vh) rotate(360deg); }
+}
+
+.book,
+.controls,
+.page-indicator {
+z-index: 10;
+}
+
+/* EYE TOGGLE BUTTON */
+.eye-toggle {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #fff;
+
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.15),
+        0 4px 12px rgba(0,0,0,0.45);
+
+    z-index: 1001;
+}
+
+/* UI HIDDEN STATE */
+.ui-hidden .controls,
+.ui-hidden .page-indicator {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+

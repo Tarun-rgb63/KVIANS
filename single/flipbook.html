@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Real Slide Book</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<audio id="bgMusic" loop>
+    <source data-music="music.mp3" type="audio/mpeg">
+</audio>
+
+<button id="eyeToggle" class="eye-toggle" onclick="toggleUI()">👁</button>
+
+<div class="fall-layer"></div>
+
+<div class="page-indicator" id="pageIndicator">1 / 11</div>
+
+<div class="book">
+    <div class="page"><img data-img="1.jpg"></div>
+    <div class="page"><img data-img="2.jpg"></div>
+    <div class="page"><img data-img="3.jpg"></div>
+    <div class="page"><img data-img="4.jpg"></div>
+    <div class="page"><img data-img="5.jpg"></div>
+    <div class="page"><img data-img="6.jpg"></div>
+    <div class="page"><img data-img="7.jpg"></div>
+    <div class="page"><img data-img="8.jpg"></div>
+    <div class="page"><img data-img="9.jpg"></div>
+    <div class="page"><img data-img="10.jpg"></div>
+    <div class="page"><img data-img="11.jpg"></div>
+</div>
+
+<div class="controls">
+    <button onclick="goStart()">⏮</button>
+    <button onclick="prev()">⟨</button>
+    <button onclick="toggleMusic()">🎵</button>
+    <button onclick="next()">⟩</button>
+    <button onclick="goEnd()">⏭</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
