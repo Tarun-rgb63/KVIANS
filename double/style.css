@@ -193,5 +193,12 @@ z-index: 10;
     pointer-events: none;
 }
 
+/* ULTRA FULLSCREEN MODE */
+.ultra-fullscreen .controls,
+.ultra-fullscreen .page-indicator,
+.ultra-fullscreen .eye-toggle {
+    opacity: 0;
+    pointer-events: none;
+}
 
 
