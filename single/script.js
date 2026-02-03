@@ -65,23 +65,29 @@ function toggleUI() {
 
 /* ULTRA FULLSCREEN */
 let ultra = false;
+
 function toggleUltra() {
   const btn = document.getElementById("ultraBtn");
 
   if (!ultra) {
     document.documentElement.requestFullscreen?.();
+    document.body.classList.add("pc-ultra");   // ✅ add class
     btn.textContent = "🡼";
     ultra = true;
   } else {
     document.exitFullscreen?.();
+    document.body.classList.remove("pc-ultra"); // ✅ remove class
     btn.textContent = "⛶";
     ultra = false;
   }
 }
 
+/* SAFETY: RESET IF USER PRESSES ESC */
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
-    document.getElementById("ultraBtn").textContent = "⛶";
+    document.body.classList.remove("pc-ultra");
+    const btn = document.getElementById("ultraBtn");
+    if (btn) btn.textContent = "⛶";
     ultra = false;
   }
 });
