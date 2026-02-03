@@ -136,3 +136,43 @@ function toggleUI() {
   const eye = document.getElementById("eyeToggle");
   if (eye) eye.textContent = uiVisible ? "👁" : "🙈";
 }
+
+/* ===== ULTRA FULLSCREEN TOGGLE ===== */
+
+let ultraOn = false;
+
+function toggleUltra() {
+  const btn = document.getElementById("ultraBtn");
+
+  if (!ultraOn) {
+    /* ENTER FULLSCREEN */
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+
+    document.body.classList.add("ultra-fullscreen");
+    btn.textContent = "🡼"; // exit-style icon
+    ultraOn = true;
+  } else {
+    /* EXIT FULLSCREEN */
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+
+    document.body.classList.remove("ultra-fullscreen");
+    btn.textContent = "⛶"; // enter fullscreen icon
+    ultraOn = false;
+  }
+}
+
+/* SYNC IF USER EXITS FULLSCREEN VIA ESC */
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    document.body.classList.remove("ultra-fullscreen");
+    const btn = document.getElementById("ultraBtn");
+    if (btn) btn.textContent = "⛶";
+    ultraOn = false;
+  }
+});
+
