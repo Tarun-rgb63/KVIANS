@@ -69,20 +69,14 @@ let ultra = false;
 function toggleUltra() {
   const btn = document.getElementById("ultraBtn");
 
-  /* ❌ BLOCK MOBILE COMPLETELY */
-  if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
-    document.documentElement.requestFullscreen?.();
-    return;
-  }
-
   if (!ultra) {
     document.documentElement.requestFullscreen?.();
-    document.body.classList.add("pc-ultra");
+    document.body.classList.add("pc-ultra");   // ✅ add class
     btn.textContent = "🡼";
     ultra = true;
   } else {
     document.exitFullscreen?.();
-    document.body.classList.remove("pc-ultra");
+    document.body.classList.remove("pc-ultra"); // ✅ remove class
     btn.textContent = "⛶";
     ultra = false;
   }
