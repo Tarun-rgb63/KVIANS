@@ -185,20 +185,39 @@ z-index: 10;
 
     z-index: 1001;
 }
-
-/* UI HIDDEN STATE */
-.ui-hidden .controls,
-.ui-hidden .page-indicator {
+/* UI HIDDEN STATE (PAGE INDICATOR ALWAYS VISIBLE) */
+.ui-hidden .controls {
     opacity: 0;
     pointer-events: none;
 }
 
-/* ULTRA FULLSCREEN MODE */
-.ultra-fullscreen .controls,
-.ultra-fullscreen .page-indicator,
-.ultra-fullscreen .eye-toggle {
-    opacity: 0;
-    pointer-events: none;
+/* ===== MOBILE LANDSCAPE BOOST (ZOOM EFFECT) ===== */
+@media (orientation: landscape) and (max-height: 520px) {
+
+  body {
+    overflow: hidden;
+  }
+
+  .book {
+    width: 98vw;              /* almost full width */
+    max-width: none;
+    aspect-ratio: 32 / 9;     /* keep double-page ratio */
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  .page img {
+    object-fit: contain;      /* no cropping */
+  }
+
+  .controls {
+    bottom: 6px;              /* save vertical space */
+  }
+
+  .page-indicator {
+    top: 6px;
+    font-size: 13px;
+  }
 }
+
 
 
