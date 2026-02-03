@@ -148,12 +148,18 @@ body {
   }
 }
 /* ===== PC ONLY: ZOOM OUT IN ULTRA FULLSCREEN ===== */
-/* ===== PC ALWAYS ZOOMED (NORMAL + ULTRA FULLSCREEN) ===== */
+/* ===== DEFAULT: NO ZOOM ANYWHERE ===== */
+.book {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ===== DESKTOP + ULTRA FULLSCREEN ONLY ===== */
 @media (min-width: 768px) {
-  .book {
+  body.pc-ultra .book {
     transform: translate(-50%, -50%) scale(1.7);
   }
 }
+
 
 
 
