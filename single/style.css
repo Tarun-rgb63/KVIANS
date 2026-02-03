@@ -147,5 +147,13 @@ body {
     font-size: 15px;
   }
 }
+/* ===== PC ONLY: ZOOM OUT IN ULTRA FULLSCREEN ===== */
+/* ===== PC ALWAYS ZOOMED (NORMAL + ULTRA FULLSCREEN) ===== */
+@media (min-width: 768px) {
+  .book {
+    transform: translate(-50%, -50%) scale(1.7);
+  }
+}
+
 
 
