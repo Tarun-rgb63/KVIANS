@@ -160,7 +160,46 @@ body {
   }
 }
 
+/* FALLING ITEMS LOOK */
+.fall-item {
+  font-size: 18px;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.25));
+  animation-name: fallDrift, sway;
+  animation-timing-function: linear, ease-in-out;
+}
+
+/* SIDE-TO-SIDE DRIFT */
+@keyframes sway {
+  0%   { margin-left: 0; }
+  50%  { margin-left: 30px; }
+  100% { margin-left: 0; }
+}
 
 
+/* ===== FLOWERS ABOVE BOOK ===== */
+.flower-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20; /* ABOVE BOOK */
+}
+
+.flower-top {
+  position: absolute;
+  top: -30px;
+  animation: flowerFall linear forwards;
+  opacity: 0.9;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+}
+
+@keyframes flowerFall {
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+  to {
+    transform: translateY(120vh) rotate(260deg);
+  }
+}
 
 
