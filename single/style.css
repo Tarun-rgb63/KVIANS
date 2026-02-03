@@ -132,20 +132,20 @@ body {
   to   { transform: translateY(110vh) rotate(360deg); }
 }
 
-/* ===== AUTO ZOOM ON LANDSCAPE (ALL DEVICES) ===== */
-@media (orientation: landscape) {
-  .book {
-    width: 98vw;
-    max-width: none;
-    transform: translate(-50%, -50%) scale(0.9); /* LANDSCAPE ZOOM */
-  }
-
+/* MOBILE FIX: KEEP ALL CONTROL BUTTONS VISIBLE */
+@media (max-width: 520px) {
   .controls {
-    bottom: 8px;
+    flex-wrap: wrap;              /* allow wrapping */
+    justify-content: center;
+    max-width: calc(100vw - 24px);
+    row-gap: 6px;
   }
 
-  .page-indicator {
-    top: 8px;
+  .controls button {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
   }
 }
+
 
