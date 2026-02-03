@@ -175,4 +175,3 @@ document.addEventListener("fullscreenchange", () => {
     ultraOn = false;
   }
 });
-
