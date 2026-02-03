@@ -91,3 +91,59 @@ document.addEventListener("fullscreenchange", () => {
     ultra = false;
   }
 });
+
+
+/* FALLING HEART + FLOWER SYSTEM */
+const fallLayer = document.querySelector(".fall-layer");
+
+const symbols = ["❤️", "🌸", "🌼", "💮"];
+const colors = ["#f43f5e", "#fb7185", "#facc15", "#a855f7"];
+
+function createFallItem() {
+  const item = document.createElement("div");
+  item.className = "fall-item";
+  item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+  const size = Math.random() * 12 + 12;
+  item.style.fontSize = size + "px";
+  item.style.left = Math.random() * 100 + "vw";
+  item.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+  const duration = Math.random() * 6 + 6; // slow fall
+  item.style.animationDuration = `${duration}s, ${duration / 2}s`;
+
+  fallLayer.appendChild(item);
+
+  setTimeout(() => item.remove(), duration * 1000);
+}
+
+/* LOW DENSITY (PERFORMANCE SAFE) */
+setInterval(createFallItem, 450);
+
+/* FLOWERS ABOVE IMAGE (LOW COUNT) */
+const flowerOverlay = document.querySelector(".flower-overlay");
+const topFlowers = ["🌸", "🌼", "💕","💖"];
+
+function dropTopFlower() {
+  const f = document.createElement("div");
+  f.className = "flower-top";
+  f.textContent = topFlowers[Math.floor(Math.random() * topFlowers.length)];
+
+  const size = Math.random() * 14 + 18; // visible but soft
+  f.style.fontSize = size + "px";
+  f.style.left = Math.random() * 90 + "vw";
+
+  const duration = Math.random() * 4 + 5; // smooth slow
+  f.style.animationDuration = duration + "s";
+
+  flowerOverlay.appendChild(f);
+  setTimeout(() => f.remove(), duration * 1000);
+}
+
+/* 5 FLOWERS EVERY 4 SECONDS */
+setInterval(() => {
+  for (let i = 0; i < 4; i++) {
+    setTimeout(dropTopFlower, i * 400);
+  }
+}, 8000);
+
