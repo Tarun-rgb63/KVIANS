@@ -155,15 +155,3 @@ body {
   opacity: 0;
   pointer-events: none;
 }
-
-/* HARD ISOLATION – prevents compositor jitter */
-.page {
-  contain: paint;
-  will-change: transform;
-}
-
-/* Prevent subpixel wobble */
-.book {
-  transform: translate3d(-50%, -50%, 0);
-  backface-visibility: hidden;
-}
