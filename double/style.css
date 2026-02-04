@@ -29,42 +29,42 @@ body {
   contain: layout paint style;
 }
 
-/* RENDER GATE */
 .book[aria-hidden="true"] {
   visibility: hidden;
 }
 
-/* PAGE */
+/* PAGE - Updated Transition & Z-Logic */
 .page {
   position: absolute;
   width: 50%;
   height: 100%;
   right: 0;
-
   transform-origin: left center;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
-
-  transition: transform 1.15s cubic-bezier(.22,.61,.36,1);
+  /* Hardware acceleration */
+  will-change: transform, z-index;
+  transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000);
   transform: translateZ(0);
-  will-change: transform;
 }
 
-/* FRONT & BACK */
 .page .front,
 .page .back {
   position: absolute;
   inset: 0;
   background: #0b1220;
+  /* Essential to prevent flickering */
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateZ(0);
+  /* Micro-offset to prevent texture bleeding */
+  transform: translateZ(1px);
 }
 
 .page .back {
-  transform: rotateY(180deg);
+  /* Flipped and placed on the opposite side of the same plane */
+  transform: rotateY(180deg) translateZ(1px);
 }
 
 .page img {
@@ -72,12 +72,13 @@ body {
   height: 100%;
   object-fit: contain;
   background: #000;
+  /* Force GPU rendering */
   transform: translateZ(0);
 }
 
-/* TURN */
 .page.turn {
-  transform: rotateY(-178deg);
+  /* Avoid exactly 180 to prevent floating point jitter in some browsers */
+  transform: rotateY(-179.9deg);
 }
 
 /* CONTROLS */
@@ -92,7 +93,7 @@ body {
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(10px);
   border-radius: 999px;
-  z-index: 10;
+  z-index: 10000; /* Ensure UI is always on top */
 }
 
 .controls button {
@@ -106,7 +107,6 @@ body {
   background: rgba(255,255,255,0.15);
 }
 
-/* PAGE INDICATOR */
 .page-indicator {
   position: fixed;
   top: 16px;
@@ -117,10 +117,9 @@ body {
   color: #fff;
   background: rgba(0,0,0,0.45);
   border-radius: 20px;
-  z-index: 10;
+  z-index: 10000;
 }
 
-/* FALLING BACKGROUND */
 .fall-layer {
   position: fixed;
   inset: 0;
@@ -137,7 +136,6 @@ body {
   to { transform: translateY(110vh) rotate(360deg); }
 }
 
-/* EYE TOGGLE */
 .eye-toggle {
   position: fixed;
   bottom: 16px;
@@ -148,7 +146,7 @@ body {
   border: none;
   color: #fff;
   background: rgba(15,23,42,.75);
-  z-index: 11;
+  z-index: 10001;
 }
 
 .ui-hidden .controls {
