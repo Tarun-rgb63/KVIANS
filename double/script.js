@@ -63,55 +63,86 @@ window.addEventListener("DOMContentLoaded", () => {
     const pages = document.querySelectorAll(".page");
     let index = 0;
 
+    /* ===== LOCK Z-INDEX ONCE (NO RUNTIME MUTATION) ===== */
+    pages.forEach((p, i) => {
+      p.style.zIndex = pages.length - i;
+    });
+
     function updateIndicator() {
-      indicator.textContent = `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
+      indicator.textContent =
+        `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
     }
 
+    /* legacy function retained (not used) */
     function updateZ() {
       pages.forEach((p, i) => {
         p.style.zIndex = i < index ? i + 1 : pages.length - i;
       });
     }
 
-    updateZ();
     updateIndicator();
 
+    /* ===== REVEAL AFTER COMPOSITING READY ===== */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         book.removeAttribute("aria-hidden");
       });
     });
 
+    /* ===== NAVIGATION (FRAME-SEPARATED) ===== */
+
     window.next = () => {
       if (index >= pages.length) return;
-      pages[index++].classList.add("turn");
-      updateZ(); updateIndicator();
+
+      const page = pages[index];
+
+      index++;
+      updateIndicator();
+
+      requestAnimationFrame(() => {
+        page.classList.add("turn");
+      });
     };
 
     window.prev = () => {
       if (index <= 0) return;
-      pages[--index].classList.remove("turn");
-      updateZ(); updateIndicator();
+
+      const page = pages[index - 1];
+
+      index--;
+      updateIndicator();
+
+      requestAnimationFrame(() => {
+        page.classList.remove("turn");
+      });
     };
 
     window.goStart = () => {
-      while (index > 0) pages[--index].classList.remove("turn");
-      updateZ(); updateIndicator();
+      while (index > 0) {
+        const page = pages[index - 1];
+        index--;
+        page.classList.remove("turn");
+      }
+      updateIndicator();
     };
 
     window.goEnd = () => {
-      while (index < pages.length) pages[index++].classList.add("turn");
-      updateZ(); updateIndicator();
+      while (index < pages.length) {
+        const page = pages[index];
+        index++;
+        page.classList.add("turn");
+      }
+      updateIndicator();
     };
 
-    /* TAP */
+    /* ===== TAP ===== */
     book.addEventListener("click", e => {
       const r = book.getBoundingClientRect();
       e.clientX - r.left > r.width / 2 ? next() : prev();
     });
   }
 
-  /* FALLING SYMBOLS */
+  /* ===== FALLING SYMBOLS ===== */
   const fallLayer = document.querySelector(".fall-layer");
   setInterval(() => {
     const d = document.createElement("div");
@@ -125,7 +156,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 1200);
 });
 
-/* UI */
+/* ===== UI ===== */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
@@ -133,7 +164,7 @@ function toggleUI() {
   eyeToggle.textContent = uiVisible ? "👁" : "🙈";
 }
 
-/* MUSIC */
+/* ===== MUSIC ===== */
 let musicPlaying = false;
 function toggleMusic() {
   const btn = document.getElementById("musicBtn");
@@ -149,7 +180,7 @@ function toggleMusic() {
   }
 }
 
-/* AUTO */
+/* ===== AUTO ===== */
 let autoTimer = null;
 function toggleAuto() {
   const btn = autoBtn;
@@ -163,7 +194,7 @@ function toggleAuto() {
   }
 }
 
-/* FULLSCREEN */
+/* ===== FULLSCREEN ===== */
 let ultraOn = false;
 function toggleUltra() {
   ultraOn
