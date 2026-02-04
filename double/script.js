@@ -45,12 +45,10 @@ window.addEventListener("DOMContentLoaded", () => {
     page.append(front, back);
     book.appendChild(page);
 
-    // CLEANUP LISTENER
-    // When animation ends, remove the 'flipping' class.
-    // The Z-index will automatically settle to --z-left or --z-right based on .turn
+    // CLEANUP: Remove *both* flipping classes when animation ends
     page.addEventListener('transitionend', (e) => {
       if (e.propertyName === 'transform') {
-        page.classList.remove('flipping');
+        page.classList.remove('flipping-right', 'flipping-left');
       }
     });
   }
@@ -62,7 +60,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   createPage("100.jpg", "last.jpg");
 
-  /* ===== INITIALIZE ===== */
+  /* ===== INIT ===== */
   Promise.all(imageDecodeQueue).then(initBook);
   setTimeout(initBook, 2000); 
 
@@ -72,17 +70,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const pages = document.querySelectorAll(".page");
     const total = pages.length;
-    let index = 0; // Tracks which page is currently 'next' to flip
+    let index = 0; 
 
-    // === THE FIX: PRE-DEFINE Z-INDEX VALUES ===
+    // === SETUP Z-INDEX VARIABLES ===
     pages.forEach((page, i) => {
-      // 1. RIGHT STACK: Page 0 is top (Z=50), Page 1 is below (Z=49)
-      const zRight = total - i;
-      
-      // 2. LEFT STACK: Page 0 is bottom (Z=1), Page 1 is above (Z=2)
-      const zLeft = i + 1;
+      // 1. Assign Index for CSS Calculation
+      page.style.setProperty('--i', i);
 
-      // Assign to CSS Variables
+      // 2. Resting States
+      const zRight = total - i; // Page 0 on top
+      const zLeft = i + 1;      // Page 0 on bottom
+      
       page.style.setProperty('--z-right', zRight);
       page.style.setProperty('--z-left', zLeft);
     });
@@ -93,50 +91,68 @@ window.addEventListener("DOMContentLoaded", () => {
 
     updateIndicator();
 
+    // --- NEXT (Forward) ---
     window.next = () => {
       if (index >= total) return;
       
       const p = pages[index];
-      
-      // 1. Priority: High (Move above everything)
-      p.classList.add("flipping");
-      
-      // 2. State: Turn (CSS swaps z-index variable automatically)
+      // Use Right-Flipping stack (Desc order)
+      p.classList.add("flipping-right");
       p.classList.add("turn");
       
       index++;
       updateIndicator();
     };
 
+    // --- PREV (Backward) ---
     window.prev = () => {
       if (index <= 0) return;
       
       index--;
       const p = pages[index];
-      
-      // 1. Priority: High
-      p.classList.add("flipping");
-      
-      // 2. State: Unturn
+      // Use Left-Flipping stack (Asc order)
+      p.classList.add("flipping-left");
       p.classList.remove("turn");
       
       updateIndicator();
     };
 
+    // --- GO START (Fast Rewind) ---
     window.goStart = () => {
       if (index === 0) return;
-      let delay = 0;
+      
+      // Start immediately (delay 0) so the first page doesn't "jump"
+      let delay = 0; 
+      
       for (let i = index - 1; i >= 0; i--) {
-        setTimeout(() => prev(), delay);
-        delay += 30;
+        // Capture 'i' in closure
+        setTimeout(() => {
+           // Direct manipulation for performance
+           index = i;
+           const p = pages[i];
+           p.classList.add("flipping-left");
+           p.classList.remove("turn");
+           updateIndicator();
+        }, delay);
+        delay += 30; // 30ms stagger
       }
     };
 
+    // --- GO END (Fast Forward) ---
     window.goEnd = () => {
       if (index >= total) return;
+      
       let delay = 0;
+      
       for (let i = index; i < total; i++) {
-        setTimeout(() => next(), delay);
+        setTimeout(() => {
+           const p = pages[i];
+           p.classList.add("flipping-right");
+           p.classList.add("turn");
+           // Correctly update index at the end of loop logic
+           index = i + 1; 
+           updateIndicator();
+        }, delay);
         delay += 30;
       }
     };
