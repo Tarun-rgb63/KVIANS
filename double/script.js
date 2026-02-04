@@ -10,7 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const musicEl = document.getElementById("bgMusic");
 
   /* ===== MUSIC SETUP ===== */
-  const musicSource = musicEl.querySelector("source[data-music]");
+  const musicSource = musicEl?.querySelector("source[data-music]");
   if (musicSource) {
     musicSource.src = MUSIC_BASE_PATH + musicSource.dataset.music;
     musicEl.load();
@@ -54,29 +54,22 @@ window.addEventListener("DOMContentLoaded", () => {
 
   /* ===== AFTER IMAGES READY ===== */
   Promise.all(imageDecodeQueue).then(initBook);
-  setTimeout(initBook, 3000); // safety fallback
+  setTimeout(initBook, 3000); 
 
   function initBook() {
     if (!book.hasAttribute("aria-hidden")) return;
 
     const pages = document.querySelectorAll(".page");
     let index = 0;
-    let isTransitioning = false; // State lock to prevent jitter
+    let isTransitioning = false;
 
     function updateIndicator() {
       indicator.textContent = `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
     }
 
-    // INDUSTRY SOLUTION: Dynamic Z-indexing calculation
     function updateZ() {
       pages.forEach((p, i) => {
-        if (i < index) {
-          // Left side: Stack upwards
-          p.style.zIndex = i + 1;
-        } else {
-          // Right side: Stack downwards (top page has highest Z)
-          p.style.zIndex = pages.length - i;
-        }
+        p.style.zIndex = i < index ? i + 1 : pages.length - i;
       });
     }
 
@@ -84,64 +77,91 @@ window.addEventListener("DOMContentLoaded", () => {
     updateIndicator();
 
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        book.removeAttribute("aria-hidden");
-      });
+      book.removeAttribute("aria-hidden");
     });
 
     window.next = () => {
       if (index >= pages.length || isTransitioning) return;
-      
       isTransitioning = true;
-      const currentPage = pages[index];
       
-      // Elevate the flipping page above ALL others
-      currentPage.style.zIndex = 1000;
-      currentPage.classList.add("turn");
+      const p = pages[index];
+      p.style.zIndex = 1000; // Elevate before animation
       
-      index++;
-      
-      // Calculate depth mid-flip (approx 90 deg)
-      setTimeout(() => {
-        updateZ();
+      // Use rAF to ensure Z-index is set before class is added
+      requestAnimationFrame(() => {
+        p.classList.add("turn");
+        index++;
         updateIndicator();
-        isTransitioning = false;
-      }, 900); // Matches CSS transition duration
+        setTimeout(() => {
+          updateZ();
+          isTransitioning = false;
+        }, 850); 
+      });
     };
 
     window.prev = () => {
       if (index <= 0 || isTransitioning) return;
-      
       isTransitioning = true;
-      index--;
-      const currentPage = pages[index];
       
-      // Elevate the flipping page
-      currentPage.style.zIndex = 1000;
-      currentPage.classList.remove("turn");
-
-      setTimeout(() => {
-        updateZ();
+      index--;
+      const p = pages[index];
+      p.style.zIndex = 1000;
+      
+      requestAnimationFrame(() => {
+        p.classList.remove("turn");
         updateIndicator();
-        isTransitioning = false;
-      }, 900);
+        setTimeout(() => {
+          updateZ();
+          isTransitioning = false;
+        }, 850);
+      });
     };
 
     window.goStart = () => {
-      if(isTransitioning) return;
-      index = 0;
-      pages.forEach(p => p.classList.remove("turn"));
-      updateZ(); updateIndicator();
+      if (isTransitioning || index === 0) return;
+      isTransitioning = true;
+      
+      // Flip back sequentially to avoid the "image placement" jump
+      let i = index - 1;
+      const interval = setInterval(() => {
+        if (i < 0) {
+          clearInterval(interval);
+          setTimeout(() => {
+            updateZ();
+            isTransitioning = false;
+          }, 800);
+          return;
+        }
+        pages[i].style.zIndex = 1000 + i;
+        pages[i].classList.remove("turn");
+        index--;
+        updateIndicator();
+        i--;
+      }, 60); // Fast stagger (60ms)
     };
 
     window.goEnd = () => {
-      if(isTransitioning) return;
-      index = pages.length;
-      pages.forEach(p => p.classList.add("turn"));
-      updateZ(); updateIndicator();
+      if (isTransitioning || index >= pages.length) return;
+      isTransitioning = true;
+      
+      let i = index;
+      const interval = setInterval(() => {
+        if (i >= pages.length) {
+          clearInterval(interval);
+          setTimeout(() => {
+            updateZ();
+            isTransitioning = false;
+          }, 800);
+          return;
+        }
+        pages[i].style.zIndex = 1000 + i;
+        pages[i].classList.add("turn");
+        index++;
+        updateIndicator();
+        i++;
+      }, 60);
     };
 
-    /* TAP */
     book.addEventListener("click", e => {
       if (isTransitioning) return;
       const r = book.getBoundingClientRect();
@@ -151,24 +171,27 @@ window.addEventListener("DOMContentLoaded", () => {
 
   /* FALLING SYMBOLS */
   const fallLayer = document.querySelector(".fall-layer");
-  setInterval(() => {
-    const d = document.createElement("div");
-    d.className = "fall-item";
-    d.textContent = ["🌸","🌼","❤️","💖"][Math.random()*4|0];
-    d.style.left = Math.random()*100 + "vw";
-    d.style.fontSize = 18 + Math.random()*8 + "px";
-    d.style.animationDuration = 10 + Math.random()*8 + "s";
-    fallLayer.appendChild(d);
-    setTimeout(() => d.remove(), 20000);
-  }, 1200);
+  if (fallLayer) {
+    setInterval(() => {
+      const d = document.createElement("div");
+      d.className = "fall-item";
+      d.textContent = ["🌸","🌼","❤️","💖"][Math.random()*4|0];
+      d.style.left = Math.random()*100 + "vw";
+      d.style.fontSize = 18 + Math.random()*8 + "px";
+      d.style.animationDuration = 10 + Math.random()*8 + "s";
+      fallLayer.appendChild(d);
+      setTimeout(() => d.remove(), 20000);
+    }, 1200);
+  }
 });
 
-/* UI Logic remains as provided */
+/* UI Controls */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
   document.body.classList.toggle("ui-hidden", !uiVisible);
-  document.getElementById("eyeToggle").textContent = uiVisible ? "👁" : "🙈";
+  const btn = document.getElementById("eyeToggle");
+  if(btn) btn.textContent = uiVisible ? "👁" : "🙈";
 }
 
 let musicPlaying = false;
@@ -202,8 +225,6 @@ function toggleAuto() {
 
 let ultraOn = false;
 function toggleUltra() {
-  ultraOn
-    ? document.exitFullscreen?.()
-    : document.documentElement.requestFullscreen?.();
+  ultraOn ? document.exitFullscreen?.() : document.documentElement.requestFullscreen?.();
   ultraOn = !ultraOn;
 }
