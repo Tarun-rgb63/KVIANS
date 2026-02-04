@@ -73,35 +73,83 @@ createPage("100.jpg", "last.jpg");
     });
   }
 
-  window.next = () => {
-    if (index >= pages.length) return;
-    pages[index].classList.add("turn");
+/* ===== NEXT PAGE ===== */
+window.next = () => {
+  if (index >= pages.length) return;
+
+  const p = pages[index];
+
+  requestAnimationFrame(() => {
+    p.classList.add("turn");
     index++;
-    updateZ();
-    updateIndicator();
-  };
 
-  window.prev = () => {
-    if (index <= 0) return;
-    index--;
-    pages[index].classList.remove("turn");
-    updateZ();
-    updateIndicator();
-  };
+    requestAnimationFrame(() => {
+      updateZ();
+      updateIndicator();
+    });
+  });
+};
 
-  window.goStart = () => {
-    pages.forEach(p => p.classList.remove("turn"));
-    index = 0;
-    updateZ();
-    updateIndicator();
-  };
 
-  window.goEnd = () => {
-    pages.forEach(p => p.classList.add("turn"));
-    index = pages.length;
-    updateZ();
-    updateIndicator();
-  };
+/* ===== PREVIOUS PAGE ===== */
+window.prev = () => {
+  if (index <= 0) return;
+
+  index--;
+  const p = pages[index];
+
+  requestAnimationFrame(() => {
+    p.classList.remove("turn");
+
+    requestAnimationFrame(() => {
+      updateZ();
+      updateIndicator();
+    });
+  });
+};
+
+
+/* ===== GO TO START (SMOOTH, NO FLICKER) ===== */
+window.goStart = () => {
+  let i = index;
+
+  function stepBack() {
+    if (i <= 0) {
+      index = 0;
+      updateZ();
+      updateIndicator();
+      return;
+    }
+
+    i--;
+    pages[i].classList.remove("turn");
+    requestAnimationFrame(stepBack);
+  }
+
+  stepBack();
+};
+
+
+/* ===== GO TO END (SMOOTH, NO FLICKER) ===== */
+window.goEnd = () => {
+  let i = index;
+
+  function stepForward() {
+    if (i >= pages.length) {
+      index = pages.length;
+      updateZ();
+      updateIndicator();
+      return;
+    }
+
+    pages[i].classList.add("turn");
+    i++;
+    requestAnimationFrame(stepForward);
+  }
+
+  stepForward();
+};
+
 
   updateZ();
   updateIndicator();
@@ -126,16 +174,22 @@ createPage("100.jpg", "last.jpg");
   };
 
   /* ===== MUSIC TOGGLE ===== */
-  let musicPlaying = false;
-  window.toggleMusic = () => {
-    if (!musicPlaying) {
-      musicEl.volume = 0.4;
-      musicEl.play();
-    } else {
-      musicEl.pause();
-    }
-    musicPlaying = !musicPlaying;
-  };
+let musicPlaying = false;
+
+window.toggleMusic = () => {
+  const btn = document.getElementById("musicBtn");
+
+  if (!musicPlaying) {
+    musicEl.volume = 0.4;
+    musicEl.play();
+    btn.textContent = "🔊"; // speaker on
+    musicPlaying = true;
+  } else {
+    musicEl.pause();
+    btn.textContent = "🔇"; // muted
+    musicPlaying = false;
+  }
+};
 
   /* ===== TAP TO TURN ===== */
   book.addEventListener("click", e => {
@@ -175,7 +229,7 @@ function toggleUltra() {
   const btn = document.getElementById("ultraBtn");
   if (!ultraOn) {
     document.documentElement.requestFullscreen?.();
-    btn.textContent = "🡼";
+    btn.textContent = "⤢";
     ultraOn = true;
   } else {
     document.exitFullscreen?.();
