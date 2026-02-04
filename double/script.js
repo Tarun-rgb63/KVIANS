@@ -5,15 +5,16 @@ const TOTAL_CONTENT_IMAGES = 100;
 const imageDecodeQueue = [];
 
 window.addEventListener("DOMContentLoaded", () => {
-
   const book = document.getElementById("book");
   const indicator = document.getElementById("pageIndicator");
   const musicEl = document.getElementById("bgMusic");
 
   /* ===== MUSIC SETUP ===== */
   const musicSource = musicEl.querySelector("source[data-music]");
-  musicSource.src = MUSIC_BASE_PATH + musicSource.dataset.music;
-  musicEl.load();
+  if (musicSource) {
+    musicSource.src = MUSIC_BASE_PATH + musicSource.dataset.music;
+    musicEl.load();
+  }
 
   /* ===== PAGE CREATION ===== */
   function createPage(frontImg, backImg) {
@@ -22,7 +23,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const front = document.createElement("div");
     front.className = "front";
-
     if (frontImg) {
       const img = new Image();
       img.src = IMAGE_BASE_PATH + frontImg;
@@ -33,7 +33,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const back = document.createElement("div");
     back.className = "back";
-
     if (backImg) {
       const img = new Image();
       img.src = IMAGE_BASE_PATH + backImg;
@@ -62,87 +61,95 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const pages = document.querySelectorAll(".page");
     let index = 0;
-
-    /* ===== LOCK Z-INDEX ONCE (NO RUNTIME MUTATION) ===== */
-    pages.forEach((p, i) => {
-      p.style.zIndex = pages.length - i;
-    });
+    let isTransitioning = false; // State lock to prevent jitter
 
     function updateIndicator() {
-      indicator.textContent =
-        `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
+      indicator.textContent = `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
     }
 
-    /* legacy function retained (not used) */
+    // INDUSTRY SOLUTION: Dynamic Z-indexing calculation
     function updateZ() {
       pages.forEach((p, i) => {
-        p.style.zIndex = i < index ? i + 1 : pages.length - i;
+        if (i < index) {
+          // Left side: Stack upwards
+          p.style.zIndex = i + 1;
+        } else {
+          // Right side: Stack downwards (top page has highest Z)
+          p.style.zIndex = pages.length - i;
+        }
       });
     }
 
+    updateZ();
     updateIndicator();
 
-    /* ===== REVEAL AFTER COMPOSITING READY ===== */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         book.removeAttribute("aria-hidden");
       });
     });
 
-    /* ===== NAVIGATION (FRAME-SEPARATED) ===== */
-
     window.next = () => {
-      if (index >= pages.length) return;
-
-      const page = pages[index];
-
+      if (index >= pages.length || isTransitioning) return;
+      
+      isTransitioning = true;
+      const currentPage = pages[index];
+      
+      // Elevate the flipping page above ALL others
+      currentPage.style.zIndex = 1000;
+      currentPage.classList.add("turn");
+      
       index++;
-      updateIndicator();
-
-      requestAnimationFrame(() => {
-        page.classList.add("turn");
-      });
+      
+      // Calculate depth mid-flip (approx 90 deg)
+      setTimeout(() => {
+        updateZ();
+        updateIndicator();
+        isTransitioning = false;
+      }, 900); // Matches CSS transition duration
     };
 
     window.prev = () => {
-      if (index <= 0) return;
-
-      const page = pages[index - 1];
-
+      if (index <= 0 || isTransitioning) return;
+      
+      isTransitioning = true;
       index--;
-      updateIndicator();
+      const currentPage = pages[index];
+      
+      // Elevate the flipping page
+      currentPage.style.zIndex = 1000;
+      currentPage.classList.remove("turn");
 
-      requestAnimationFrame(() => {
-        page.classList.remove("turn");
-      });
+      setTimeout(() => {
+        updateZ();
+        updateIndicator();
+        isTransitioning = false;
+      }, 900);
     };
 
     window.goStart = () => {
-      while (index > 0) {
-        const page = pages[index - 1];
-        index--;
-        page.classList.remove("turn");
-      }
-      updateIndicator();
+      if(isTransitioning) return;
+      index = 0;
+      pages.forEach(p => p.classList.remove("turn"));
+      updateZ(); updateIndicator();
     };
 
     window.goEnd = () => {
-      while (index < pages.length) {
-        const page = pages[index];
-        index++;
-        page.classList.add("turn");
-      }
-      updateIndicator();
+      if(isTransitioning) return;
+      index = pages.length;
+      pages.forEach(p => p.classList.add("turn"));
+      updateZ(); updateIndicator();
     };
 
-    /* ===== TAP ===== */
+    /* TAP */
     book.addEventListener("click", e => {
+      if (isTransitioning) return;
       const r = book.getBoundingClientRect();
       e.clientX - r.left > r.width / 2 ? next() : prev();
     });
   }
 
-  /* ===== FALLING SYMBOLS ===== */
+  /* FALLING SYMBOLS */
   const fallLayer = document.querySelector(".fall-layer");
   setInterval(() => {
     const d = document.createElement("div");
@@ -156,34 +163,33 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 1200);
 });
 
-/* ===== UI ===== */
+/* UI Logic remains as provided */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
   document.body.classList.toggle("ui-hidden", !uiVisible);
-  eyeToggle.textContent = uiVisible ? "👁" : "🙈";
+  document.getElementById("eyeToggle").textContent = uiVisible ? "👁" : "🙈";
 }
 
-/* ===== MUSIC ===== */
 let musicPlaying = false;
 function toggleMusic() {
+  const musicEl = document.getElementById("bgMusic");
   const btn = document.getElementById("musicBtn");
   if (!musicPlaying) {
-    bgMusic.volume = 0.4;
-    bgMusic.play();
+    musicEl.volume = 0.4;
+    musicEl.play();
     btn.textContent = "🔊";
     musicPlaying = true;
   } else {
-    bgMusic.pause();
+    musicEl.pause();
     btn.textContent = "🔇";
     musicPlaying = false;
   }
 }
 
-/* ===== AUTO ===== */
 let autoTimer = null;
 function toggleAuto() {
-  const btn = autoBtn;
+  const btn = document.getElementById("autoBtn");
   if (!autoTimer) {
     btn.textContent = "⏸";
     autoTimer = setInterval(() => next(), 5000);
@@ -194,7 +200,6 @@ function toggleAuto() {
   }
 }
 
-/* ===== FULLSCREEN ===== */
 let ultraOn = false;
 function toggleUltra() {
   ultraOn
