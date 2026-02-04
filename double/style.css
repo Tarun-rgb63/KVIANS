@@ -221,5 +221,21 @@ z-index: 10;
   }
 }
 
+/* ===== MOBILE WHITE FLASH FIX ===== */
+
+
+
+.page {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+
+
+@media (max-width: 768px) {
+  .page {
+    transition: transform 0.9s cubic-bezier(.22,.61,.36,1);
+  }
+}
 
 
