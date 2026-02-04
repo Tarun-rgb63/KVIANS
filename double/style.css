@@ -193,42 +193,6 @@ z-index: 10;
     pointer-events: none;
 }
 
-/* ===== MOBILE LANDSCAPE BOOST (ZOOM EFFECT) ===== */
-@media (orientation: landscape) and (max-height: 520px) {
-
-  body {
-    overflow: hidden;
-  }
-
-  .book {
-    width: 98vw;              /* almost full width */
-    max-width: none;
-    aspect-ratio: 32 / 9;     /* keep double-page ratio */
-    transform: translate(-50%, -50%) scale(1.08);
-  }
-
-  .page img {
-    object-fit: contain;      /* no cropping */
-  }
-
-  .controls {
-    bottom: 6px;              /* save vertical space */
-  }
-
-  .page-indicator {
-    top: 6px;
-    font-size: 13px;
-  }
-}
-
-/* ===== MOBILE WHITE FLASH FIX ===== */
-
-
-
-.page {
-  transform: translateZ(0);
-  will-change: transform;
-}
 
 
 
