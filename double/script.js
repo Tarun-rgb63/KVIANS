@@ -9,11 +9,12 @@ window.addEventListener("DOMContentLoaded", () => {
   const indicator = document.getElementById("pageIndicator");
   const musicEl = document.getElementById("bgMusic");
 
-  /* ===== MUSIC SETUP ===== */
-  const musicSource = musicEl?.querySelector("source[data-music]");
-  if (musicSource) {
-    musicSource.src = MUSIC_BASE_PATH + musicSource.dataset.music;
-    musicEl.load();
+  if (musicEl) {
+    const musicSource = musicEl.querySelector("source[data-music]");
+    if (musicSource) {
+      musicSource.src = MUSIC_BASE_PATH + musicSource.dataset.music;
+      musicEl.load();
+    }
   }
 
   /* ===== PAGE CREATION ===== */
@@ -43,149 +44,125 @@ window.addEventListener("DOMContentLoaded", () => {
 
     page.append(front, back);
     book.appendChild(page);
+
+    // CLEANUP LISTENER
+    // When animation ends, remove the 'flipping' class.
+    // The Z-index will automatically settle to --z-left or --z-right based on .turn
+    page.addEventListener('transitionend', (e) => {
+      if (e.propertyName === 'transform') {
+        page.classList.remove('flipping');
+      }
+    });
   }
 
-  /* ===== BUILD BOOK ===== */
+  /* ===== BUILD PAGES ===== */
   createPage("front.jpg", "1.jpg");
   for (let i = 2; i <= 99; i += 2) {
     createPage(`${i}.jpg`, `${i + 1}.jpg`);
   }
   createPage("100.jpg", "last.jpg");
 
-  /* ===== AFTER IMAGES READY ===== */
+  /* ===== INITIALIZE ===== */
   Promise.all(imageDecodeQueue).then(initBook);
-  setTimeout(initBook, 3000); 
+  setTimeout(initBook, 2000); 
 
   function initBook() {
-    if (!book.hasAttribute("aria-hidden")) return;
+    if (book.dataset.init) return;
+    book.dataset.init = "true";
 
     const pages = document.querySelectorAll(".page");
-    let index = 0;
-    let isTransitioning = false;
+    const total = pages.length;
+    let index = 0; // Tracks which page is currently 'next' to flip
+
+    // === THE FIX: PRE-DEFINE Z-INDEX VALUES ===
+    pages.forEach((page, i) => {
+      // 1. RIGHT STACK: Page 0 is top (Z=50), Page 1 is below (Z=49)
+      const zRight = total - i;
+      
+      // 2. LEFT STACK: Page 0 is bottom (Z=1), Page 1 is above (Z=2)
+      const zLeft = i + 1;
+
+      // Assign to CSS Variables
+      page.style.setProperty('--z-right', zRight);
+      page.style.setProperty('--z-left', zLeft);
+    });
 
     function updateIndicator() {
       indicator.textContent = `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
     }
 
-    function updateZ() {
-      pages.forEach((p, i) => {
-        p.style.zIndex = i < index ? i + 1 : pages.length - i;
-      });
-    }
-
-    updateZ();
     updateIndicator();
 
-    requestAnimationFrame(() => {
-      book.removeAttribute("aria-hidden");
-    });
-
     window.next = () => {
-      if (index >= pages.length || isTransitioning) return;
-      isTransitioning = true;
+      if (index >= total) return;
       
       const p = pages[index];
-      p.style.zIndex = 1000; // Elevate before animation
       
-      // Use rAF to ensure Z-index is set before class is added
-      requestAnimationFrame(() => {
-        p.classList.add("turn");
-        index++;
-        updateIndicator();
-        setTimeout(() => {
-          updateZ();
-          isTransitioning = false;
-        }, 850); 
-      });
+      // 1. Priority: High (Move above everything)
+      p.classList.add("flipping");
+      
+      // 2. State: Turn (CSS swaps z-index variable automatically)
+      p.classList.add("turn");
+      
+      index++;
+      updateIndicator();
     };
 
     window.prev = () => {
-      if (index <= 0 || isTransitioning) return;
-      isTransitioning = true;
+      if (index <= 0) return;
       
       index--;
       const p = pages[index];
-      p.style.zIndex = 1000;
       
-      requestAnimationFrame(() => {
-        p.classList.remove("turn");
-        updateIndicator();
-        setTimeout(() => {
-          updateZ();
-          isTransitioning = false;
-        }, 850);
-      });
+      // 1. Priority: High
+      p.classList.add("flipping");
+      
+      // 2. State: Unturn
+      p.classList.remove("turn");
+      
+      updateIndicator();
     };
 
     window.goStart = () => {
-      if (isTransitioning || index === 0) return;
-      isTransitioning = true;
-      
-      // Flip back sequentially to avoid the "image placement" jump
-      let i = index - 1;
-      const interval = setInterval(() => {
-        if (i < 0) {
-          clearInterval(interval);
-          setTimeout(() => {
-            updateZ();
-            isTransitioning = false;
-          }, 800);
-          return;
-        }
-        pages[i].style.zIndex = 1000 + i;
-        pages[i].classList.remove("turn");
-        index--;
-        updateIndicator();
-        i--;
-      }, 60); // Fast stagger (60ms)
+      if (index === 0) return;
+      let delay = 0;
+      for (let i = index - 1; i >= 0; i--) {
+        setTimeout(() => prev(), delay);
+        delay += 30;
+      }
     };
 
     window.goEnd = () => {
-      if (isTransitioning || index >= pages.length) return;
-      isTransitioning = true;
-      
-      let i = index;
-      const interval = setInterval(() => {
-        if (i >= pages.length) {
-          clearInterval(interval);
-          setTimeout(() => {
-            updateZ();
-            isTransitioning = false;
-          }, 800);
-          return;
-        }
-        pages[i].style.zIndex = 1000 + i;
-        pages[i].classList.add("turn");
-        index++;
-        updateIndicator();
-        i++;
-      }, 60);
+      if (index >= total) return;
+      let delay = 0;
+      for (let i = index; i < total; i++) {
+        setTimeout(() => next(), delay);
+        delay += 30;
+      }
     };
 
+    /* TAP NAV */
     book.addEventListener("click", e => {
-      if (isTransitioning) return;
       const r = book.getBoundingClientRect();
       e.clientX - r.left > r.width / 2 ? next() : prev();
     });
   }
 
-  /* FALLING SYMBOLS */
+  /* FX */
   const fallLayer = document.querySelector(".fall-layer");
-  if (fallLayer) {
-    setInterval(() => {
-      const d = document.createElement("div");
-      d.className = "fall-item";
-      d.textContent = ["🌸","🌼","❤️","💖"][Math.random()*4|0];
-      d.style.left = Math.random()*100 + "vw";
-      d.style.fontSize = 18 + Math.random()*8 + "px";
-      d.style.animationDuration = 10 + Math.random()*8 + "s";
-      fallLayer.appendChild(d);
-      setTimeout(() => d.remove(), 20000);
-    }, 1200);
-  }
+  setInterval(() => {
+    const d = document.createElement("div");
+    d.className = "fall-item";
+    d.textContent = ["🌸","🌼","❤️","💖"][Math.random()*4|0];
+    d.style.left = Math.random()*100 + "vw";
+    d.style.fontSize = 18 + Math.random()*8 + "px";
+    d.style.animationDuration = 10 + Math.random()*8 + "s";
+    fallLayer.appendChild(d);
+    setTimeout(() => d.remove(), 20000);
+  }, 1200);
 });
 
-/* UI Controls */
+/* UI Helpers */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
@@ -215,7 +192,7 @@ function toggleAuto() {
   const btn = document.getElementById("autoBtn");
   if (!autoTimer) {
     btn.textContent = "⏸";
-    autoTimer = setInterval(() => next(), 5000);
+    autoTimer = setInterval(() => next(), 4000);
   } else {
     clearInterval(autoTimer);
     autoTimer = null;
