@@ -28,7 +28,7 @@ body {
   perspective: 3000px;
 }
 
-/* PAGE - THE CORE FIX */
+/* PAGE CONFIGURATION */
 .page {
   position: absolute;
   width: 50%;
@@ -37,24 +37,37 @@ body {
   transform-origin: left center;
   transform-style: preserve-3d;
   
+  /* Optimize rendering */
   will-change: transform, z-index;
   transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000);
   
-  /* DEFAULT (RIGHT) STATE: Use the calculated Right Z-Index */
+  /* DEFAULT (Resting on Right): Use Calculated Right Stack */
   z-index: var(--z-right);
   transform: rotateY(0deg);
 }
 
-/* TURNED (LEFT) STATE: Automatically swap to the Left Z-Index */
+/* TURNED (Resting on Left): Use Calculated Left Stack */
 .page.turn {
   z-index: var(--z-left);
   transform: rotateY(-180deg);
 }
 
-/* FLIPPING STATE: Always on top while moving */
-.page.flipping {
-  z-index: 9999 !important;
+/* --- THE FIX: DIRECTIONAL FLIPPING STACKS --- */
+
+/* 1. Flipping Forward (Next/GoEnd): 
+   Low Index (Page 0) must be ON TOP of High Index (Page 1).
+   Calculation: 20000 - Index */
+.page.flipping-right {
+  z-index: calc(20000 - var(--i)) !important;
 }
+
+/* 2. Flipping Backward (Prev/GoStart): 
+   High Index (Page 10) must be ON TOP of Low Index (Page 9).
+   Calculation: 20000 + Index */
+.page.flipping-left {
+  z-index: calc(20000 + var(--i)) !important;
+}
+
 
 /* CONTENT FACES */
 .page .front,
@@ -69,7 +82,7 @@ body {
   justify-content: center;
 }
 
-/* Offset slightly to prevent Z-fighting */
+/* MICRO-OFFSETS TO PREVENT Z-FIGHTING */
 .page .front {
   transform: translateZ(1px);
 }
@@ -87,7 +100,7 @@ body {
   border-left: 1px solid rgba(255,255,255,0.05);
 }
 
-/* CONTROLS */
+/* UI CONTROLS */
 .controls {
   position: fixed;
   bottom: 10px;
