@@ -194,11 +194,41 @@ Even though time is going to fly by and we will head off to different places, th
     </div>
 
     <div class="mode-buttons">
-        <button class="btn" onclick="showMode()">📖 Load Flipbook</button>
+        <button class="btn" onclick="startLoading()">📖 Load Flipbook</button>
         <button class="btn" onclick="showStudents()">🎓 Special</button>
     </div>
 
 </div>
+
+<!-- SCREEN LOADER -->
+<div id="screenLoader" class="screen">
+
+    <div class="rainbow rainbow-title">Loading Memories…</div>
+    <div class="rainbow-sub">Please wait</div>
+
+    <div style="width: 100%; max-width: 420px; margin-top: 24px;">
+        <div style="
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.15);
+            overflow: hidden;
+        ">
+            <div id="loadBar" style="
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg,#38bdf8,#22c55e);
+                transition: width .25s ease;
+            "></div>
+        </div>
+
+        <div id="loadText" style="margin-top: 10px; font-size: 14px;">
+            Loading 0 / 0 files
+        </div>
+
+    </div>
+
+</div>
+
 
 <!-- SCREEN 2 -->
 <div id="screenMode" class="screen">
@@ -266,7 +296,75 @@ function openDouble() {
 function openSingle() {
     window.location.href = "single/flipbook.html";
 }
+
+
+
+
+const IMAGE_PATH = "media/";
+const MUSIC_PATH = "media/music.mp3";
+
+function startLoading() {
+    screenLoad.classList.remove("active");
+    screenLoader.classList.add("active");
+
+    const files = [];
+
+    // front cover
+    files.push("front.jpg");
+
+    // content images (adjust count if needed)
+    for (let i = 1; i <= 13; i++) files.push(`${i}.jpg`);
+
+    // back cover
+    files.push("last.jpg");
+
+    // music
+    files.push("music.mp3");
+
+    let loaded = 0;
+    const total = files.length;
+
+    loadBar.style.width = "0%";
+    loadText.textContent = `Loading 0 / ${total} files`;
+
+    function fileLoaded() {
+        loaded++;
+
+        const percent = Math.floor((loaded / total) * 100);
+        loadBar.style.width = percent + "%";
+        loadText.textContent = `Loading ${loaded} / ${total} files`;
+
+        if (loaded === total) {
+            loadBar.style.width = "100%";
+            loadText.textContent = "Loading complete";
+
+            setTimeout(() => {
+                screenLoader.classList.remove("active");
+                screenMode.classList.add("active");
+            }, 500);
+        }
+    }
+
+    files.forEach(file => {
+        if (file.endsWith(".mp3")) {
+            const audio = new Audio();
+            audio.src = MUSIC_PATH;
+            audio.addEventListener("canplaythrough", fileLoaded, { once: true });
+            audio.load();
+        } else {
+            const img = new Image();
+            img.src = IMAGE_PATH + file;
+            img.onload = fileLoaded;
+            img.onerror = fileLoaded; // prevents freeze if one file fails
+        }
+    });
+}
 </script>
+
+</script>
+
+
+
 
 </body>
 </html>
