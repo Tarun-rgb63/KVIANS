@@ -33,7 +33,7 @@ body {
   visibility: hidden;
 }
 
-/* PAGE - Updated Transition & Z-Logic */
+/* PAGE */
 .page {
   position: absolute;
   width: 50%;
@@ -41,9 +41,8 @@ body {
   right: 0;
   transform-origin: left center;
   transform-style: preserve-3d;
-  /* Hardware acceleration */
   will-change: transform, z-index;
-  transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1.000);
   transform: translateZ(0);
 }
 
@@ -52,18 +51,16 @@ body {
   position: absolute;
   inset: 0;
   background: #0b1220;
-  /* Essential to prevent flickering */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Micro-offset to prevent texture bleeding */
+  /* Prevent flickering during Z-index swaps */
   transform: translateZ(1px);
 }
 
 .page .back {
-  /* Flipped and placed on the opposite side of the same plane */
   transform: rotateY(180deg) translateZ(1px);
 }
 
@@ -72,12 +69,10 @@ body {
   height: 100%;
   object-fit: contain;
   background: #000;
-  /* Force GPU rendering */
   transform: translateZ(0);
 }
 
 .page.turn {
-  /* Avoid exactly 180 to prevent floating point jitter in some browsers */
   transform: rotateY(-179.9deg);
 }
 
@@ -93,7 +88,7 @@ body {
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(10px);
   border-radius: 999px;
-  z-index: 10000; /* Ensure UI is always on top */
+  z-index: 10000;
 }
 
 .controls button {
