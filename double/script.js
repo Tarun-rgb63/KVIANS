@@ -1,15 +1,10 @@
-/* ===== CHANGE PATHS ONLY HERE ===== */
+/* ===== PATHS ===== */
 const IMAGE_BASE_PATH = "../media/";
 const MUSIC_BASE_PATH = "../media/";
 
 window.addEventListener("DOMContentLoaded", () => {
 
-  /* APPLY IMAGE PATHS */
-  document.querySelectorAll("img[data-img]").forEach(img => {
-    img.src = IMAGE_BASE_PATH + img.dataset.img;
-  });
-
-  /* APPLY MUSIC PATH */
+  /* ===== MUSIC SETUP ===== */
   const musicEl = document.getElementById("bgMusic");
   const musicSource = musicEl?.querySelector("source[data-music]");
   if (musicSource) {
@@ -17,20 +12,59 @@ window.addEventListener("DOMContentLoaded", () => {
     musicEl.load();
   }
 
-  /* ===== FLIPBOOK LOGIC ===== */
+/* ===== BUILD BOOK PAGES ===== */
+const TOTAL_CONTENT_IMAGES = 100;
+const book = document.getElementById("book");
 
+function createPage(frontImg, backImg) {
+  const page = document.createElement("div");
+  page.className = "page";
+
+  const front = document.createElement("div");
+  front.className = "front";
+  if (frontImg) {
+    const img = document.createElement("img");
+    img.src = IMAGE_BASE_PATH + frontImg;
+    front.appendChild(img);
+  }
+
+  const back = document.createElement("div");
+  back.className = "back";
+  if (backImg) {
+    const img = document.createElement("img");
+    img.src = IMAGE_BASE_PATH + backImg;
+    back.appendChild(img);
+  }
+
+  page.append(front, back);
+  book.appendChild(page);
+}
+
+/* ========= FRONT COVER PAGE ========= */
+/* front.jpg | 1.jpg */
+createPage("front.jpg", "1.jpg");
+
+/* ========= INNER PAGES ========= */
+/* 2.jpg–99.jpg */
+for (let i = 2; i <= 99; i += 2) {
+  createPage(`${i}.jpg`, `${i + 1}.jpg`);
+}
+
+/* ========= BACK COVER PAGE ========= */
+/* 100.jpg | last.jpg */
+createPage("100.jpg", "last.jpg");
+
+
+
+  /* ===== FLIPBOOK CORE ===== */
   const pages = document.querySelectorAll(".page");
   const indicator = document.getElementById("pageIndicator");
-  const TOTAL_IMAGES = document.querySelectorAll(".page img").length;
-
-  const TURN_TIME = 1150;
-  const OVERLAP = 0.7;
 
   let index = 0;
 
   function updateIndicator() {
-    const shown = Math.min(index * 2, TOTAL_IMAGES);
-    indicator.textContent = `${shown} / ${TOTAL_IMAGES}`;
+    const shown = Math.min(index * 2, TOTAL_CONTENT_IMAGES);
+    indicator.textContent = `${shown} / ${TOTAL_CONTENT_IMAGES}`;
   }
 
   function updateZ() {
@@ -39,34 +73,30 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  window.next = function () {
+  window.next = () => {
     if (index >= pages.length) return;
-    const page = pages[index];
-    page.style.zIndex = pages.length + 50;
-    page.classList.add("turn");
+    pages[index].classList.add("turn");
     index++;
     updateZ();
     updateIndicator();
   };
 
-  window.prev = function () {
+  window.prev = () => {
     if (index <= 0) return;
     index--;
-    const page = pages[index];
-    page.style.zIndex = pages.length + 50;
-    page.classList.remove("turn");
+    pages[index].classList.remove("turn");
     updateZ();
     updateIndicator();
   };
 
-  window.goStart = function () {
+  window.goStart = () => {
     pages.forEach(p => p.classList.remove("turn"));
     index = 0;
     updateZ();
     updateIndicator();
   };
 
-  window.goEnd = function () {
+  window.goEnd = () => {
     pages.forEach(p => p.classList.add("turn"));
     index = pages.length;
     updateZ();
@@ -76,35 +106,28 @@ window.addEventListener("DOMContentLoaded", () => {
   updateZ();
   updateIndicator();
 
-  /* ===== FALLING SYMBOLS ===== */
+  /* ===== AUTO PLAY ===== */
+  let autoTimer = null;
+  let autoPlaying = false;
 
-  const fallLayer = document.querySelector(".fall-layer");
-  if (fallLayer) {
-    const symbols = ["🌸", "🌼", "❤️", "💖"];
-
-    function rand(min, max) {
-      return Math.random() * (max - min) + min;
+  window.toggleAuto = () => {
+    const btn = document.getElementById("autoBtn");
+    if (!autoPlaying) {
+      autoPlaying = true;
+      btn.textContent = "⏸";
+      autoTimer = setInterval(() => {
+        index >= pages.length ? goStart() : next();
+      }, 5000);
+    } else {
+      autoPlaying = false;
+      btn.textContent = "▶";
+      clearInterval(autoTimer);
     }
+  };
 
-    function createFallItem() {
-      const item = document.createElement("div");
-      item.className = "fall-item";
-      item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      item.style.left = rand(5, 95) + "vw";
-      item.style.fontSize = rand(18, 26) + "px";
-      item.style.animationDuration = rand(10, 18) + "s";
-      fallLayer.appendChild(item);
-      setTimeout(() => item.remove(), 20000);
-    }
-
-    setInterval(createFallItem, 1200);
-  }
-
-  /* ===== MUSIC ===== */
-
+  /* ===== MUSIC TOGGLE ===== */
   let musicPlaying = false;
-
-  window.toggleMusic = function () {
+  window.toggleMusic = () => {
     if (!musicPlaying) {
       musicEl.volume = 0.4;
       musicEl.play();
@@ -115,63 +138,48 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   /* ===== TAP TO TURN ===== */
+  book.addEventListener("click", e => {
+    const r = book.getBoundingClientRect();
+    (e.clientX - r.left) > r.width / 2 ? next() : prev();
+  });
 
-  const book = document.querySelector(".book");
-  if (book) {
-    book.addEventListener("click", e => {
-      const rect = book.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      x > rect.width / 2 ? next() : prev();
-    });
+  /* ===== FALLING SYMBOLS ===== */
+  const fallLayer = document.querySelector(".fall-layer");
+  if (fallLayer) {
+    const symbols = ["🌸", "🌼", "❤️", "💖"];
+    setInterval(() => {
+      const d = document.createElement("div");
+      d.className = "fall-item";
+      d.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      d.style.left = Math.random() * 100 + "vw";
+      d.style.fontSize = 18 + Math.random() * 8 + "px";
+      d.style.animationDuration = 10 + Math.random() * 8 + "s";
+      fallLayer.appendChild(d);
+      setTimeout(() => d.remove(), 20000);
+    }, 1200);
   }
 
 });
 
-/* ===== UI TOGGLE (GLOBAL) ===== */
-
+/* ===== UI TOGGLE ===== */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
   document.body.classList.toggle("ui-hidden", !uiVisible);
-  const eye = document.getElementById("eyeToggle");
-  if (eye) eye.textContent = uiVisible ? "👁" : "🙈";
+  document.getElementById("eyeToggle").textContent = uiVisible ? "👁" : "🙈";
 }
 
-/* ===== ULTRA FULLSCREEN TOGGLE ===== */
-
+/* ===== ULTRA FULLSCREEN ===== */
 let ultraOn = false;
-
 function toggleUltra() {
   const btn = document.getElementById("ultraBtn");
-
   if (!ultraOn) {
-    /* ENTER FULLSCREEN */
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.msRequestFullscreen) el.msRequestFullscreen();
-
-    document.body.classList.add("ultra-fullscreen");
-    btn.textContent = "🡼"; // exit-style icon
+    document.documentElement.requestFullscreen?.();
+    btn.textContent = "🡼";
     ultraOn = true;
   } else {
-    /* EXIT FULLSCREEN */
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    else if (document.msExitFullscreen) document.msExitFullscreen();
-
-    document.body.classList.remove("ultra-fullscreen");
-    btn.textContent = "⛶"; // enter fullscreen icon
+    document.exitFullscreen?.();
+    btn.textContent = "⛶";
     ultraOn = false;
   }
 }
-
-/* SYNC IF USER EXITS FULLSCREEN VIA ESC */
-document.addEventListener("fullscreenchange", () => {
-  if (!document.fullscreenElement) {
-    document.body.classList.remove("ultra-fullscreen");
-    const btn = document.getElementById("ultraBtn");
-    if (btn) btn.textContent = "⛶";
-    ultraOn = false;
-  }
-});
