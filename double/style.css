@@ -16,7 +16,7 @@ body {
   overscroll-behavior: none;
 }
 
-/* BOOK */
+/* BOOK CONTAINER */
 .book {
   position: absolute;
   top: 50%;
@@ -26,14 +26,9 @@ body {
   transform: translate3d(-50%, -50%, 0);
   transform-style: preserve-3d;
   perspective: 3000px;
-  contain: layout paint style;
 }
 
-.book[aria-hidden="true"] {
-  visibility: hidden;
-}
-
-/* PAGE */
+/* PAGE - THE CORE FIX */
 .page {
   position: absolute;
   width: 50%;
@@ -41,11 +36,27 @@ body {
   right: 0;
   transform-origin: left center;
   transform-style: preserve-3d;
+  
   will-change: transform, z-index;
-  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1.000);
-  transform: translateZ(0);
+  transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+  
+  /* DEFAULT (RIGHT) STATE: Use the calculated Right Z-Index */
+  z-index: var(--z-right);
+  transform: rotateY(0deg);
 }
 
+/* TURNED (LEFT) STATE: Automatically swap to the Left Z-Index */
+.page.turn {
+  z-index: var(--z-left);
+  transform: rotateY(-180deg);
+}
+
+/* FLIPPING STATE: Always on top while moving */
+.page.flipping {
+  z-index: 9999 !important;
+}
+
+/* CONTENT FACES */
 .page .front,
 .page .back {
   position: absolute;
@@ -56,7 +67,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Prevent flickering during Z-index swaps */
+}
+
+/* Offset slightly to prevent Z-fighting */
+.page .front {
   transform: translateZ(1px);
 }
 
@@ -69,11 +83,8 @@ body {
   height: 100%;
   object-fit: contain;
   background: #000;
-  transform: translateZ(0);
-}
-
-.page.turn {
-  transform: rotateY(-179.9deg);
+  pointer-events: none;
+  border-left: 1px solid rgba(255,255,255,0.05);
 }
 
 /* CONTROLS */
