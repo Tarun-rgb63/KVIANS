@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Flipbook Loader</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
     margin: 0;
@@ -269,6 +268,10 @@ Even though time is going to fly by and we will head off to different places, th
 </div>
 
 <script>
+    
+const TOTAL_IMAGES = 57; // ← CHANGE THIS ONLY
+  
+    
 function showMode() {
     screenLoad.classList.remove("active");
     screenMode.classList.add("active");
@@ -312,13 +315,13 @@ function startLoading() {
     // front cover
     files.push("front.jpg");
 
-    // content images (adjust count if needed)
-    for (let i = 1; i <= 13; i++) files.push(`${i}.jpg`);
+    // AUTO image list
+    for (let i = 1; i <= TOTAL_IMAGES; i++) {
+        files.push(`${i}.jpg`);
+    }
 
-    // back cover
+    // back cover + music
     files.push("last.jpg");
-
-    // music
     files.push("music.mp3");
 
     let loaded = 0;
@@ -330,11 +333,11 @@ function startLoading() {
     function fileLoaded() {
         loaded++;
 
-        const percent = Math.floor((loaded / total) * 100);
+        const percent = Math.round((loaded / total) * 100);
         loadBar.style.width = percent + "%";
         loadText.textContent = `Loading ${loaded} / ${total} files`;
 
-        if (loaded === total) {
+        if (loaded >= total) {
             loadBar.style.width = "100%";
             loadText.textContent = "Loading complete";
 
@@ -349,22 +352,28 @@ function startLoading() {
         if (file.endsWith(".mp3")) {
             const audio = new Audio();
             audio.src = MUSIC_PATH;
+            audio.preload = "auto";
             audio.addEventListener("canplaythrough", fileLoaded, { once: true });
-            audio.load();
+            audio.addEventListener("error", fileLoaded, { once: true });
         } else {
             const img = new Image();
             img.src = IMAGE_PATH + file;
+            img.decoding = "async";
             img.onload = fileLoaded;
-            img.onerror = fileLoaded; // prevents freeze if one file fails
+            img.onerror = fileLoaded; // NEVER freeze
         }
     });
+
+    // HARD FAILSAFE (industry-grade)
+    setTimeout(() => {
+        if (loaded < total) {
+            console.warn("Loader timeout — forcing continue");
+            screenLoader.classList.remove("active");
+            screenMode.classList.add("active");
+        }
+    }, 8000);
 }
 </script>
-
-</script>
-
-
-
 
 </body>
 </html>
