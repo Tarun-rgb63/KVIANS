@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Flipbook Loader</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
     margin: 0;
@@ -15,6 +16,7 @@ body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: #e5e7eb;
 }
+
 /* FLIPBOOK BANNER */
 .flipbook-banner {
     width: min(520px, 90%);
@@ -23,7 +25,6 @@ body {
     transition: transform 0.35s ease, box-shadow 0.35s ease;
     box-shadow: 0 18px 40px rgba(0,0,0,0.45);
 }
-
 .flipbook-banner.lifted {
     transform: translateY(-14px) rotateZ(2deg);
     box-shadow: 0 28px 60px rgba(0,0,0,0.65);
@@ -39,7 +40,6 @@ body {
     max-width: 720px;
     padding: 32px;
 }
-
 .screen.active {
     display: flex;
 }
@@ -60,7 +60,6 @@ body {
     -webkit-text-fill-color: transparent;
     animation: rainbowMove 6s ease infinite;
 }
-
 @keyframes rainbowMove {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -73,7 +72,6 @@ body {
     letter-spacing: 2px;
     transform: perspective(600px) rotateX(12deg);
 }
-
 .rainbow-sub {
     font-size: 18px;
     font-weight: 600;
@@ -111,7 +109,6 @@ body {
     font-weight: 700;
     letter-spacing: 1.5px;
 }
-
 .mode-text {
     font-size: 16px;
     line-height: 1.6;
@@ -124,7 +121,6 @@ body {
     font-size: clamp(42px, 7vw, 64px);
     font-weight: 900;
 }
-
 .students-text {
     font-size: 18px;
     line-height: 1.7;
@@ -154,7 +150,6 @@ body {
         0 12px 35px rgba(0,0,0,0.55);
     transition: transform .18s ease;
 }
-
 .btn:hover { transform: scale(1.06); }
 .btn:active { transform: scale(0.95); }
 
@@ -165,9 +160,86 @@ body {
     justify-content: center;
 }
 
-@media (max-width: 768px) {
-    .screen { padding: 24px 18px; }
+/* EMOJI INSIDE CIRCLE LOADER */
+#screenLoader {
+    position: relative;
 }
+/* CIRCLE + EMOJI WRAPPER */
+.circle-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+/* EMOJI PERFECT CENTER */
+#loaderEmoji {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+
+    width: 68px;
+    height: 68px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 34px;
+    line-height: 1;
+
+
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.18),
+        0 8px 30px rgba(0,0,0,0.45);
+
+    pointer-events: none;
+}
+/* FLOWER FALL (FIRST SCREEN ONLY) */
+.flower-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.flower {
+    position: absolute;
+    top: -40px;
+    font-size: 20px;
+    opacity: 0.85;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+
+/* ensure content stays above flowers */
+#screenLoad > *:not(.flower-layer) {
+    position: relative;
+    z-index: 1;
+}
+
+.made-with {
+    margin-top: 18px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(203,213,245,0.7);
+
+    /* 👇 THIS LINE PRESERVES EMOJI COLOR */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+
 </style>
 </head>
 
@@ -175,6 +247,7 @@ body {
 
 <!-- SCREEN 1 -->
 <div id="screenLoad" class="screen active">
+    <div class="flower-layer"></div>
 
     <div class="rainbow rainbow-title">BATCH 2025 – 2026</div>
     <div class="rainbow rainbow-sub">(KVIANS)</div>
@@ -186,6 +259,9 @@ Think about the times we laughed so hard in the classroom 😂😅, the day we f
 
 Even though time is going to fly by and we will head off to different places, these memories will always stay warm in our hearts. The most important things we learned here weren't just in our textbooks; they were about kindness, growth, and believing in ourselves. Those lessons stay with us forever, no matter where we go. 💌💥
     </div>
+<div class="made-with">
+    MADE WITH ❤
+</div>
 
     <div class="coming-soon">
         More features & memories are coming soon… <br>
@@ -204,51 +280,64 @@ Even though time is going to fly by and we will head off to different places, th
 
     <div class="rainbow rainbow-title">Loading Memories…</div>
     <div class="rainbow-sub">Please wait</div>
+<!-- CIRCLE WRAPPER -->
+<div class="circle-wrap">
+    <!-- CIRCULAR LOADER -->
+    <svg id="circleLoader" width="120" height="120" viewBox="0 0 120 120" style="margin-top:10px;">
+        <circle cx="60" cy="60" r="54" stroke="rgba(255,255,255,0.15)" stroke-width="10" fill="none"/>
+        <circle id="circleProgress"
+            cx="60" cy="60" r="54"
+            stroke="url(#grad)"
+            stroke-width="10"
+            fill="none"
+            stroke-linecap="round"
+            stroke-dasharray="339.29"
+            stroke-dashoffset="339.29"
+            transform="rotate(-90 60 60)"
+        />
+        <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+            </linearGradient>
+        </defs>
+    </svg>
 
-    <div style="width: 100%; max-width: 420px; margin-top: 24px;">
-        <div style="
-            height: 14px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.15);
-            overflow: hidden;
-        ">
-            <div id="loadBar" style="
-                height: 100%;
-                width: 0%;
-                background: linear-gradient(90deg,#38bdf8,#22c55e);
-                transition: width .25s ease;
-            "></div>
-        </div>
 
-        <div id="loadText" style="margin-top: 10px; font-size: 14px;">
-            Loading 0 / 0 files
-        </div>
-
-    </div>
+    <!-- EMOJI CENTER -->
+    <div id="loaderEmoji">📚</div>
 
 </div>
 
 
+    <div style="width:100%;max-width:420px;margin-top:24px;">
+        <div style="height:14px;border-radius:999px;background:rgba(255,255,255,0.15);overflow:hidden;">
+            <div id="loadBar" style="height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#22c55e);transition:width .25s ease;"></div>
+        </div>
+        <div id="loadText" style="margin-top:10px;font-size:14px;">Loading 0 / 0 files</div>
+    </div>
+
+</div>
+
 <!-- SCREEN 2 -->
 <div id="screenMode" class="screen">
-<!-- FLIPBOOK BANNER -->
-<img
-  src="media/flipbookbanner.jpg"
-  class="flipbook-banner"
-  onclick="toggleBanner(this)"
-  alt="Flipbook Banner">
-    <div class="mode-title">Choose Flipbook Type</div>
 
+<img src="media/flipbookbanner.jpg"
+     class="flipbook-banner"
+     onclick="toggleBanner(this)"
+     alt="Flipbook Banner">
 
-    <div class="mode-text">
-        Every memory deserves the right way to be remembered.  
-        Choose how you want to relive these moments.
-    </div>
+<div class="mode-title">Choose Flipbook Type</div>
 
-    <div class="mode-buttons">
-        <button class="btn" onclick="openDouble()">📘 DOUBLE PAGE</button>
-        <button class="btn" onclick="openSingle()">📄 SINGLE PAGE</button>
-    </div>
+<div class="mode-text">
+Every memory deserves the right way to be remembered.  
+Choose how you want to relive these moments.
+</div>
+
+<div class="mode-buttons">
+    <button class="btn" onclick="openDouble()">📘 DOUBLE PAGE</button>
+    <button class="btn" onclick="openSingle()">📄 SINGLE PAGE</button>
+</div>
 
 </div>
 
@@ -268,111 +357,116 @@ Even though time is going to fly by and we will head off to different places, th
 </div>
 
 <script>
-    
-const TOTAL_IMAGES = 57; // ← CHANGE THIS ONLY
-  
-    
-function showMode() {
-    screenLoad.classList.remove("active");
-    screenMode.classList.add("active");
-}
+const screenLoad     = document.getElementById("screenLoad");
+const screenLoader   = document.getElementById("screenLoader");
+const screenMode     = document.getElementById("screenMode");
+const screenStudents = document.getElementById("screenStudents");
+const loadBar        = document.getElementById("loadBar");
+const loadText       = document.getElementById("loadText");
+const circleProgress = document.getElementById("circleProgress");
+const loaderEmoji    = document.getElementById("loaderEmoji");
 
-function toggleBanner(el) {
-    el.classList.toggle("lifted");
-}
-
-
-function showStudents() {
-    screenLoad.classList.remove("active");
-    screenStudents.classList.add("active");
-}
-
-function goHome() {
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    screenLoad.classList.add("active");
-}
-
-function openDouble() {
-    window.location.href = "double/flipbook.html";
-}
-
-function openSingle() {
-    window.location.href = "single/flipbook.html";
-}
-
-
-
-
+const TOTAL_IMAGES = 58;
 const IMAGE_PATH = "media/";
 const MUSIC_PATH = "media/music.mp3";
 
-function startLoading() {
+function toggleBanner(el){ el.classList.toggle("lifted"); }
+function showStudents(){ screenLoad.classList.remove("active"); screenStudents.classList.add("active"); }
+function goHome(){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); screenLoad.classList.add("active"); }
+function openDouble(){ window.location.href="double/flipbook.html"; }
+function openSingle(){ window.location.href="single/flipbook.html"; }
+
+function startLoading(){
     screenLoad.classList.remove("active");
     screenLoader.classList.add("active");
 
-    const files = [];
-
-    // front cover
+    const files=[];
     files.push("front.jpg");
+    for(let i=1;i<=TOTAL_IMAGES;i++) files.push(`${i}.jpg`);
+    files.push("last.jpg","music.mp3");
 
-    // AUTO image list
-    for (let i = 1; i <= TOTAL_IMAGES; i++) {
-        files.push(`${i}.jpg`);
-    }
+    let loaded=0,total=files.length;
 
-    // back cover + music
-    files.push("last.jpg");
-    files.push("music.mp3");
+    loadBar.style.width="0%";
+    loadText.textContent=`Loading 0 / ${total} files`;
 
-    let loaded = 0;
-    const total = files.length;
-
-    loadBar.style.width = "0%";
-    loadText.textContent = `Loading 0 / ${total} files`;
-
-    function fileLoaded() {
+    function updateProgress(){
         loaded++;
+        const percent=Math.round((loaded/total)*100);
+        loadBar.style.width=percent+"%";
+        loadText.textContent=`Loading ${loaded} / ${total} files`;
+        const circumference=339.29;
+        circleProgress.style.strokeDashoffset=circumference-(percent/100)*circumference;
+loaderEmoji.animate(
+  [
+    { transform: "translateY(9px) scale(1)" },
+    { transform: "translateY(9px) scale(1.15)" },
+    { transform: "translateY(9px) scale(1)" }
+  ],
+  { duration: 300, easing: "ease-out" }
+);
 
-        const percent = Math.round((loaded / total) * 100);
-        loadBar.style.width = percent + "%";
-        loadText.textContent = `Loading ${loaded} / ${total} files`;
-
-        if (loaded >= total) {
-            loadBar.style.width = "100%";
-            loadText.textContent = "Loading complete";
-
-            setTimeout(() => {
-                screenLoader.classList.remove("active");
-                screenMode.classList.add("active");
-            }, 500);
-        }
     }
 
-    files.forEach(file => {
-        if (file.endsWith(".mp3")) {
-            const audio = new Audio();
-            audio.src = MUSIC_PATH;
-            audio.preload = "auto";
-            audio.addEventListener("canplaythrough", fileLoaded, { once: true });
-            audio.addEventListener("error", fileLoaded, { once: true });
-        } else {
-            const img = new Image();
-            img.src = IMAGE_PATH + file;
-            img.decoding = "async";
-            img.onload = fileLoaded;
-            img.onerror = fileLoaded; // NEVER freeze
-        }
+    Promise.allSettled(
+        files.map(file=>new Promise(resolve=>{
+            if(file.endsWith(".mp3")){
+                const audio=new Audio(MUSIC_PATH);
+                audio.preload="auto";
+                audio.addEventListener("canplaythrough",()=>{updateProgress();resolve();},{once:true});
+                audio.addEventListener("error",()=>{updateProgress();resolve();},{once:true});
+            } else {
+                const img=new Image();
+                img.src=IMAGE_PATH+file;
+                img.decoding="async";
+                img.onload=async()=>{try{await img.decode();}catch{} updateProgress();resolve();};
+                img.onerror=()=>{updateProgress();resolve();};
+            }
+        }))
+    ).then(()=>{
+        screenLoader.classList.remove("active");
+        screenMode.classList.add("active");
     });
-
-    // HARD FAILSAFE (industry-grade)
-    setTimeout(() => {
-        if (loaded < total) {
-            console.warn("Loader timeout — forcing continue");
-            screenLoader.classList.remove("active");
-            screenMode.classList.add("active");
-        }
-    }, 8000);
 }
+
+/* ===== FLOWER FALL LOGIC (SCREEN 1 ONLY) ===== */
+const flowerLayer = document.querySelector("#screenLoad .flower-layer");
+let flowerTimer = null;
+
+function startFlowers() {
+    if (!flowerLayer) return;
+
+    flowerTimer = setInterval(() => {
+        const flower = document.createElement("div");
+        flower.className = "flower";
+        flower.textContent = "🌸"; // ← change flower emoji here
+
+        flower.style.left = Math.random() * 100 + "vw";
+        flower.style.fontSize = (16 + Math.random() * 16) + "px";
+        flower.style.animationDuration = (6 + Math.random() * 4) + "s";
+
+        flowerLayer.appendChild(flower);
+
+        setTimeout(() => flower.remove(), 12000);
+    }, 800); // frequency
+}
+
+function stopFlowers() {
+    clearInterval(flowerTimer);
+    flowerLayer.innerHTML = "";
+}
+
+/* start flowers on first screen load */
+startFlowers();
+
+/* stop flowers when loading flipbook */
+const originalStartLoading = startLoading;
+startLoading = function () {
+    stopFlowers();
+    originalStartLoading();
+};
+
+
 </script>
 
 </body>
