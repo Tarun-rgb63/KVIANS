@@ -187,7 +187,7 @@ body {
     font-size: 34px;
     line-height: 1;
 
-
+    transform: translateY(9px);
     border-radius: 50%;
     background: rgba(255,255,255,0.12);
     backdrop-filter: blur(12px);
@@ -202,12 +202,17 @@ body {
 }
 /* FLOWER FALL (FIRST SCREEN ONLY) */
 .flower-layer {
-    position: absolute;
-    inset: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
 }
+
 
 .flower {
     position: absolute;
@@ -219,9 +224,10 @@ body {
 
 @keyframes fall {
     to {
-        transform: translateY(110vh) rotate(360deg);
+        transform: translateY(130vh) translateX(40px) rotate(360deg);
     }
 }
+
 
 /* ensure content stays above flowers */
 #screenLoad > *:not(.flower-layer) {
@@ -239,6 +245,22 @@ body {
     /* 👇 THIS LINE PRESERVES EMOJI COLOR */
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
+.made-with {
+    animation: heartPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes heartPulse {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+        text-shadow: none;
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.06);
+        text-shadow: 0 0 12px rgba(255,80,120,0.55);
+    }
+}
 
 
 </style>
@@ -253,7 +275,7 @@ body {
     <div class="rainbow rainbow-title">BATCH 2025 – 2026</div>
     <div class="rainbow rainbow-sub">(KVIANS)</div>
 
-    <div class="story">
+    <div class="story" id="storyText">
 This journey was never just about heavy backpacks, messy notes, or those scary exams. It was really about the small, quiet moments that changed us without us even realizing it. 🥺
 
 Think about the times we laughed so hard in the classroom 😂😅, the day we felt nervous about a project , and the friends who started to feel like family ❤💖. Every little win we celebrated and every mistake we made actually mattered. They were all steps helping us move forward together. Our class is special because we share memories full of brave moments and big, bright dreams.
@@ -261,7 +283,8 @@ Think about the times we laughed so hard in the classroom 😂😅, the day we f
 Even though time is going to fly by and we will head off to different places, these memories will always stay warm in our hearts. The most important things we learned here weren't just in our textbooks; they were about kindness, growth, and believing in ourselves. Those lessons stay with us forever, no matter where we go. 💌💥
     </div>
 <div class="made-with">
-    MADE WITH ❤
+    MADE WITH ❤️
+
 </div>
 
     <div class="coming-soon">
@@ -349,7 +372,7 @@ Choose how you want to relive these moments.
     <div class="rainbow-sub">STAY TUNED</div>
 
     <div class="students-text">
-        Something special is comming... 
+        Something special is coming... 
         A space full of memories, stories, smiles, and moments that truly define our journey together.
     </div>
 
@@ -440,16 +463,17 @@ function startFlowers() {
     flowerTimer = setInterval(() => {
         const flower = document.createElement("div");
         flower.className = "flower";
-        flower.textContent = "🌸"; // ← change flower emoji here
+        flower.textContent = "❄️"; // ← change flower emoji here
 
         flower.style.left = Math.random() * 100 + "vw";
         flower.style.fontSize = (16 + Math.random() * 16) + "px";
-        flower.style.animationDuration = (6 + Math.random() * 4) + "s";
+        flower.style.animationDuration = (10 + Math.random() * 6) + "s";
+
 
         flowerLayer.appendChild(flower);
 
-        setTimeout(() => flower.remove(), 12000);
-    }, 800); // frequency
+        setTimeout(() => flower.remove(), 18000);
+    }, 1000); // frequency
 }
 
 function stopFlowers() {
@@ -467,9 +491,21 @@ startLoading = function () {
     originalStartLoading();
 };
 
+/* ===== TYPEWRITER EFFECT (STORY) ===== */
+const storyEl = document.getElementById("storyText");
+const storyHTML = storyEl.innerHTML;
+storyEl.innerHTML = "";
+
+let i = 0;
+function typeStory() {
+    if (i < storyHTML.length) {
+        storyEl.innerHTML += storyHTML[i++];
+        setTimeout(typeStory, 12); // typing speed
+    }
+}
+typeStory();
 
 </script>
 
 </body>
 </html>
-
