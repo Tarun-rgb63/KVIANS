@@ -659,31 +659,10 @@ goHome = function () {
     stopQuotes();
     originalGoHome();
 };
-
-
-/* ===== HEART EMOJI POOL (EDIT FREELY) ===== */
-const HEARTS = [
-    "❤️",
-    "💖",
-    "💗",
-    "💓",
-    "💞",
-    "🧡",
-    "💛",
-    "💚",
-    "💙",
-    "💜"
-];
-
-
-/* ===== GLOBAL DOUBLE TAP / DOUBLE CLICK HEART (ALL SCREENS) ===== */
-let lastTapTime = 0;
-
 function spawnHeart(x, y) {
     const heart = document.createElement("div");
     heart.className = "like-heart";
 
-    /* pick random heart */
     heart.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
 
     heart.style.left = x + "px";
@@ -695,22 +674,29 @@ function spawnHeart(x, y) {
 }
 
 
-/* Desktop: double click anywhere */
+/* ===== HEART EMOJI POOL (EDIT FREELY) ===== */
+/* ===== HEART EMOJI POOL ===== */
+const HEARTS = ["❤️","💖","💗","💓","💞","🧡","💛","💚","💙","💜"];
+
+/* ===== DESKTOP DOUBLE CLICK ===== */
 document.addEventListener("dblclick", (e) => {
     spawnHeart(e.clientX, e.clientY);
 });
 
-/* Mobile: double tap anywhere */
+/* ===== MOBILE DOUBLE TAP ===== */
+let lastTap = 0;
+
 document.addEventListener("touchend", (e) => {
     const now = Date.now();
     const touch = e.changedTouches[0];
 
-    if (now - lastTapTime < 300) {
+    if (now - lastTap < 300) {
         spawnHeart(touch.clientX, touch.clientY);
     }
 
-    lastTapTime = now;
+    lastTap = now;
 });
+
 
 
 </script>
