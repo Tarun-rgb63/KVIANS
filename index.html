@@ -360,6 +360,7 @@ body {
 
 <body>
 
+
 <!-- SCREEN 1 -->
 <div id="screenLoad" class="screen active">
     <div class="flower-layer"></div>
@@ -381,7 +382,8 @@ Even though time is going to fly by and we will head off to different places, th
 
     <div class="coming-soon">
         More features & memories are coming soon… <br>
-        “STAY TUNED”
+        “STAY TUNED” <br>
+        DOUBLE TAP ANYWHERE
     </div>
 
     <div class="mode-buttons">
@@ -390,6 +392,7 @@ Even though time is going to fly by and we will head off to different places, th
     </div>
 
 </div>
+
 
 <!-- SCREEN LOADER -->
 <div id="screenLoader" class="screen">
@@ -657,13 +660,31 @@ goHome = function () {
     originalGoHome();
 };
 
-/* ===== DOUBLE TAP / DOUBLE CLICK HEART (FIRST SCREEN ONLY) ===== */
+
+/* ===== HEART EMOJI POOL (EDIT FREELY) ===== */
+const HEARTS = [
+    "❤️",
+    "💖",
+    "💗",
+    "💓",
+    "💞",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜"
+];
+
+
+/* ===== GLOBAL DOUBLE TAP / DOUBLE CLICK HEART (ALL SCREENS) ===== */
 let lastTapTime = 0;
 
 function spawnHeart(x, y) {
     const heart = document.createElement("div");
     heart.className = "like-heart";
-    heart.textContent = "❤️";
+
+    /* pick random heart */
+    heart.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
 
     heart.style.left = x + "px";
     heart.style.top = y + "px";
@@ -673,13 +694,14 @@ function spawnHeart(x, y) {
     setTimeout(() => heart.remove(), 1000);
 }
 
-/* Desktop: double click */
-screenLoad.addEventListener("dblclick", (e) => {
+
+/* Desktop: double click anywhere */
+document.addEventListener("dblclick", (e) => {
     spawnHeart(e.clientX, e.clientY);
 });
 
-/* Mobile: double tap */
-screenLoad.addEventListener("touchend", (e) => {
+/* Mobile: double tap anywhere */
+document.addEventListener("touchend", (e) => {
     const now = Date.now();
     const touch = e.changedTouches[0];
 
