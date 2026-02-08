@@ -659,6 +659,15 @@ goHome = function () {
     stopQuotes();
     originalGoHome();
 };
+
+
+const IS_TOUCH_DEVICE =
+  "ontouchstart" in window ||
+  navigator.maxTouchPoints > 0 ||
+  navigator.msMaxTouchPoints > 0;
+
+
+
 function spawnHeart(x, y) {
     const heart = document.createElement("div");
     heart.className = "like-heart";
@@ -679,23 +688,33 @@ function spawnHeart(x, y) {
 const HEARTS = ["❤️","💖","💗","💓","💞","🧡","💛","💚","💙","💜"];
 
 /* ===== DESKTOP DOUBLE CLICK ===== */
-document.addEventListener("dblclick", (e) => {
+/* ===== DESKTOP DOUBLE CLICK (NON-TOUCH ONLY) ===== */
+if (!IS_TOUCH_DEVICE) {
+  document.addEventListener("dblclick", (e) => {
     spawnHeart(e.clientX, e.clientY);
-});
+  });
+}
 
 /* ===== MOBILE DOUBLE TAP ===== */
+/* ===== MOBILE DOUBLE TAP (TOUCH ONLY) ===== */
 let lastTap = 0;
 
-document.addEventListener("touchend", (e) => {
-    const now = Date.now();
-    const touch = e.changedTouches[0];
+if (IS_TOUCH_DEVICE) {
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      const now = Date.now();
+      const touch = e.changedTouches[0];
 
-    if (now - lastTap < 300) {
+      if (now - lastTap < 300) {
         spawnHeart(touch.clientX, touch.clientY);
-    }
+      }
 
-    lastTap = now;
-});
+      lastTap = now;
+    },
+    { passive: true }
+  );
+}
 
 
 
