@@ -45,11 +45,10 @@ window.addEventListener("DOMContentLoaded", () => {
     page.append(front, back);
     book.appendChild(page);
 
-    // Reset stacking after animation
+    // CLEANUP: Remove *both* flipping classes when animation ends
     page.addEventListener('transitionend', (e) => {
       if (e.propertyName === 'transform') {
         page.classList.remove('flipping-right', 'flipping-left');
-        page.style.zIndex = ""; // reset manual stacking
       }
     });
   }
@@ -61,8 +60,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   createPage("100.jpg", "last.jpg");
 
+  /* ===== INIT ===== */
   Promise.all(imageDecodeQueue).then(initBook);
-  setTimeout(initBook, 2000);
+  setTimeout(initBook, 2000); 
 
   function initBook() {
     if (book.dataset.init) return;
@@ -70,82 +70,91 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const pages = document.querySelectorAll(".page");
     const total = pages.length;
-    let index = 0;
+    let index = 0; 
 
+    // === SETUP Z-INDEX VARIABLES ===
     pages.forEach((page, i) => {
+      // 1. Assign Index for CSS Calculation
       page.style.setProperty('--i', i);
-      const zRight = total - i;
-      const zLeft = i + 1;
+
+      // 2. Resting States
+      const zRight = total - i; // Page 0 on top
+      const zLeft = i + 1;      // Page 0 on bottom
+      
       page.style.setProperty('--z-right', zRight);
       page.style.setProperty('--z-left', zLeft);
     });
 
     function updateIndicator() {
-      indicator.textContent =
-        `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
+      indicator.textContent = `${Math.min(index * 2, TOTAL_CONTENT_IMAGES)} / ${TOTAL_CONTENT_IMAGES}`;
     }
 
     updateIndicator();
 
-    /* ===== NORMAL NEXT ===== */
+    // --- NEXT (Forward) ---
     window.next = () => {
       if (index >= total) return;
-
+      
       const p = pages[index];
+      // Use Right-Flipping stack (Desc order)
       p.classList.add("flipping-right");
       p.classList.add("turn");
-
+      
       index++;
       updateIndicator();
     };
 
-    /* ===== NORMAL PREV ===== */
+    // --- PREV (Backward) ---
     window.prev = () => {
       if (index <= 0) return;
-
+      
       index--;
       const p = pages[index];
-
+      // Use Left-Flipping stack (Asc order)
       p.classList.add("flipping-left");
       p.classList.remove("turn");
-
+      
       updateIndicator();
     };
 
-    /* ===== GO START (Smooth Full Flip Back) ===== */
+    // --- GO START (Fast Rewind) ---
     window.goStart = () => {
       if (index === 0) return;
-
+      
+      // Start immediately (delay 0) so the first page doesn't "jump"
+      let delay = 0; 
+      
       for (let i = index - 1; i >= 0; i--) {
-        const p = pages[i];
-
-        // Force proper stacking so no middle page shows
-        p.style.zIndex = 30000 + i;
-
-        p.classList.add("flipping-left");
-        p.classList.remove("turn");
+        // Capture 'i' in closure
+        setTimeout(() => {
+           // Direct manipulation for performance
+           index = i;
+           const p = pages[i];
+           p.classList.add("flipping-left");
+           p.classList.remove("turn");
+           updateIndicator();
+        }, delay);
+        delay += 30; // 30ms stagger
       }
-
-      index = 0;
-      updateIndicator();
     };
 
-    /* ===== GO END (Smooth Full Flip Forward) ===== */
+    // --- GO END (Fast Forward) ---
     window.goEnd = () => {
       if (index >= total) return;
-
+      
+      let delay = 0;
+      
       for (let i = index; i < total; i++) {
-        const p = pages[i];
-
-        // Force proper stacking so no middle page shows
-        p.style.zIndex = 30000 - i;
-
-        p.classList.add("flipping-right");
-        p.classList.add("turn");
+        setTimeout(() => {
+           const p = pages[i];
+           p.classList.add("flipping-right");
+           p.classList.add("turn");
+           // Correctly update index at the end of loop logic
+           index = i + 1; 
+           updateIndicator();
+        }, delay);
+        delay += 30;
       }
-
-      index = total;
-      updateIndicator();
     };
 
     /* TAP NAV */
@@ -155,7 +164,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== FLOATING EFFECT ===== */
+  /* FX */
   const fallLayer = document.querySelector(".fall-layer");
   setInterval(() => {
     const d = document.createElement("div");
@@ -169,21 +178,19 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 1200);
 });
 
-/* ===== UI Helpers ===== */
-
+/* UI Helpers */
 let uiVisible = true;
 function toggleUI() {
   uiVisible = !uiVisible;
   document.body.classList.toggle("ui-hidden", !uiVisible);
   const btn = document.getElementById("eyeToggle");
-  if (btn) btn.textContent = uiVisible ? "👁" : "🙈";
+  if(btn) btn.textContent = uiVisible ? "👁" : "🙈";
 }
 
 let musicPlaying = false;
 function toggleMusic() {
   const musicEl = document.getElementById("bgMusic");
   const btn = document.getElementById("musicBtn");
-
   if (!musicPlaying) {
     musicEl.volume = 0.4;
     musicEl.play();
@@ -199,7 +206,6 @@ function toggleMusic() {
 let autoTimer = null;
 function toggleAuto() {
   const btn = document.getElementById("autoBtn");
-
   if (!autoTimer) {
     btn.textContent = "⏸";
     autoTimer = setInterval(() => next(), 4000);
@@ -212,8 +218,6 @@ function toggleAuto() {
 
 let ultraOn = false;
 function toggleUltra() {
-  ultraOn
-    ? document.exitFullscreen?.()
-    : document.documentElement.requestFullscreen?.();
+  ultraOn ? document.exitFullscreen?.() : document.documentElement.requestFullscreen?.();
   ultraOn = !ultraOn;
 }
