@@ -134,8 +134,10 @@ window.goStart = () => {
   isBulkAnimating = true;
   stopAutoIfRunning();
 
+  book.classList.add("bulk-animating");
+
   let delay = 0;
-  const step = ultraOn ? 60 : 40; // ← slower in fullscreen
+  const step = ultraOn ? 90 : 30;
 
   for (let i = index - 1; i >= 0; i--) {
     setTimeout(() => {
@@ -151,6 +153,7 @@ window.goStart = () => {
 
   setTimeout(() => {
     isBulkAnimating = false;
+    book.classList.remove("bulk-animating");
   }, delay + 700);
 };
 
@@ -163,8 +166,10 @@ window.goEnd = () => {
   isBulkAnimating = true;
   stopAutoIfRunning();
 
+  book.classList.add("bulk-animating");
+
   let delay = 0;
-  const step = ultraOn ? 60 : 40; // ← slower in fullscreen
+  const step = ultraOn ? 90 : 30;
 
   for (let i = index; i < total; i++) {
     setTimeout(() => {
@@ -180,6 +185,7 @@ window.goEnd = () => {
 
   setTimeout(() => {
     isBulkAnimating = false;
+    book.classList.remove("bulk-animating");
   }, delay + 700);
 };
 
@@ -252,9 +258,21 @@ function toggleAuto() {
 }
 
 let ultraOn = false;
+
+
 function toggleUltra() {
-  ultraOn
-    ? document.exitFullscreen?.()
-    : document.documentElement.requestFullscreen?.();
+  const isMobile = window.innerWidth <= 768;
+
+  if (!ultraOn) {
+    document.documentElement.requestFullscreen?.();
+
+    if (isMobile) {
+      document.body.classList.add("ultra-mobile-zoom");
+    }
+  } else {
+    document.exitFullscreen?.();
+    document.body.classList.remove("ultra-mobile-zoom");
+  }
+
   ultraOn = !ultraOn;
 }
