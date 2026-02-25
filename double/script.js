@@ -134,10 +134,8 @@ window.goStart = () => {
   isBulkAnimating = true;
   stopAutoIfRunning();
 
-  book.classList.add("bulk-animating");
-
   let delay = 0;
-  const step = ultraOn ? 90 : 30;
+  const step = ultraOn ? 70 : 40;
 
   for (let i = index - 1; i >= 0; i--) {
     setTimeout(() => {
@@ -153,10 +151,8 @@ window.goStart = () => {
 
   setTimeout(() => {
     isBulkAnimating = false;
-    book.classList.remove("bulk-animating");
   }, delay + 700);
 };
-
 
 /* ===== GO END (LOCKED + SLOW IN ULTRA) ===== */
 window.goEnd = () => {
@@ -166,10 +162,8 @@ window.goEnd = () => {
   isBulkAnimating = true;
   stopAutoIfRunning();
 
-  book.classList.add("bulk-animating");
-
   let delay = 0;
-  const step = ultraOn ? 90 : 30;
+  const step = ultraOn ? 70 : 40;
 
   for (let i = index; i < total; i++) {
     setTimeout(() => {
@@ -185,7 +179,6 @@ window.goEnd = () => {
 
   setTimeout(() => {
     isBulkAnimating = false;
-    book.classList.remove("bulk-animating");
   }, delay + 700);
 };
 
