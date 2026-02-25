@@ -135,7 +135,7 @@ window.goStart = () => {
   stopAutoIfRunning();
 
   let delay = 0;
-  const step = ultraOn ? 90 : 50;
+  const step = ultraOn ? 20 : 30;
 
   for (let i = index - 1; i >= 0; i--) {
     setTimeout(() => {
@@ -163,7 +163,7 @@ window.goEnd = () => {
   stopAutoIfRunning();
 
   let delay = 0;
-  const step = ultraOn ? 90 : 50;
+  const step = ultraOn ? 20 : 30;
 
   for (let i = index; i < total; i++) {
     setTimeout(() => {
