@@ -21,7 +21,7 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(95vw, 760px);
+  width: min(98vw, 1100px);
   aspect-ratio: 32 / 9;
   transform: translate3d(-50%, -50%, 0);
   transform-style: preserve-3d;
@@ -173,25 +173,3 @@ body {
   pointer-events: none;
 }
 
-/* Ultra fullscreen mobile zoom */
-.ultra-mobile-zoom .book {
-  transform: scale(1.15);
-  transition: transform 0.4s ease;
-}
-
-/* Prevent overflow scroll issues */
-.ultra-mobile-zoom {
-  overflow: hidden;
-}
-
-/* Motion blur during bulk flip */
-.book.bulk-animating {
-  filter: blur(2px);
-  transition: filter 0.2s ease;
-}
-
-/* Slightly stronger blur in ultra fullscreen */
-.ultra-mobile-zoom .book {
-  transform: translate3d(-50%, -50%, 0) scale(1.15);
-  transition: transform 0.4s ease;
-}
