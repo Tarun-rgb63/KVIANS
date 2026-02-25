@@ -254,17 +254,10 @@ let ultraOn = false;
 
 
 function toggleUltra() {
-  const isMobile = window.innerWidth <= 768;
-
   if (!ultraOn) {
     document.documentElement.requestFullscreen?.();
-
-    if (isMobile) {
-      document.body.classList.add("ultra-mobile-zoom");
-    }
   } else {
     document.exitFullscreen?.();
-    document.body.classList.remove("ultra-mobile-zoom");
   }
 
   ultraOn = !ultraOn;
